@@ -1,6 +1,0 @@
-Flask
-Flask-MySQLdb
-Flask-SocketIO
-Werkzeug
-reportlab
-openai
