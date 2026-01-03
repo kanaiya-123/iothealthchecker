@@ -1,11 +1,11 @@
-import MySQLdb
+import sqlclient
 
-def get_db_connection():
-    return MySQLdb.connect(
+def get_connection():
+    return sqlclient.connect(
         host="localhost",
         user="root",
-        passwd="",
-        db="Do_Name_Checker",
-        charset='utf8',
-        use_unicode=True
+        password="",
+        database="Do_Name_Checker",
+        charset="utf8mb4",
+        cursorclass=sqlclient.cursors.DictCursor
     )

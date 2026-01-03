@@ -1,0 +1,6 @@
+Flask
+sqlclient
+openai
+pillow
+pydantic
+reportlab
