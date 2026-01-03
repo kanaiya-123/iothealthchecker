@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medical Reports | Doctor Portal</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --bg-panel: #1e293b;
+            --primary: #3b82f6;
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            --border: rgba(255,255,255,0.08);
+            --font-ui: 'Inter', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+            
+            /* Report Specific Colors */
+            --pdf-red: #ef4444;
+            --csv-green: #10b981;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: var(--font-ui);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* --- SIDEBAR --- */
+        .sidebar {
+            width: 260px;
+            background: var(--bg-panel);
+            border-right: 1px solid var(--border);
+            display: flex; flex-direction: column;
+            padding: 20px;
+        }
+
+        .brand { font-size: 1.2rem; font-weight: 700; color: var(--primary); display: flex; align-items: center; gap: 10px; margin-bottom: 40px; }
+        .nav-menu { list-style: none; display: flex; flex-direction: column; gap: 5px; }
+        .nav-item a { text-decoration: none; color: var(--text-muted); padding: 12px 15px; border-radius: 8px; display: flex; align-items: center; gap: 12px; font-size: 0.9rem; font-weight: 500; transition: 0.2s; }
+        .nav-item a:hover, .nav-item a.active { background: rgba(59, 130, 246, 0.1); color: var(--primary); }
+
+        /* --- MAIN CONTENT --- */
+        .main-content {
+            flex: 1; display: flex; flex-direction: column; overflow-y: auto; padding: 30px;
+        }
+
+        .page-header { margin-bottom: 30px; }
+        .page-header h1 { font-size: 1.5rem; font-weight: 700; margin-bottom: 5px; }
+        .page-header p { color: var(--text-muted); font-size: 0.9rem; }
+
+        /* GENERATOR PANEL */
+        .generator-card {
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* Decorative top border */
+        .generator-card::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--csv-green));
+        }
+
+        .card-title {
+            display: flex; align-items: center; gap: 12px; margin-bottom: 25px;
+        }
+        .card-icon {
+            width: 40px; height: 40px; background: rgba(59, 130, 246, 0.1); color: var(--primary);
+            border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;
+        }
+
+        .form-grid {
+            display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 20px; margin-bottom: 25px;
+        }
+
+        .form-group label { display: block; color: var(--text-muted); font-size: 0.85rem; margin-bottom: 8px; }
+        
+        .form-input {
+            width: 100%; background: #0f172a; border: 1px solid var(--border); color: white;
+            padding: 12px; border-radius: 8px; outline: none; font-family: var(--font-ui); transition: 0.2s;
+        }
+        .form-input:focus { border-color: var(--primary); }
+        
+        /* Custom styling for date inputs to look good in dark mode */
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(1); opacity: 0.6; cursor: pointer;
+        }
+
+        .action-row {
+            display: flex; gap: 15px; border-top: 1px solid var(--border); padding-top: 25px;
+        }
+
+        .btn-gen {
+            padding: 12px 24px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer;
+            display: flex; align-items: center; gap: 10px; transition: transform 0.2s; font-size: 0.95rem;
+        }
+        .btn-gen:hover { transform: translateY(-2px); }
+        
+        .btn-pdf { background: var(--pdf-red); color: white; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3); }
+        .btn-csv { background: var(--csv-green); color: white; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3); }
+
+        /* HISTORY SECTION */
+        .history-section {
+            background: var(--bg-panel); border: 1px solid var(--border); border-radius: 16px; overflow: hidden;
+        }
+        .history-header {
+            padding: 20px 30px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;
+        }
+
+        .report-table { width: 100%; border-collapse: collapse; }
+        
+        .report-table th {
+            text-align: left; padding: 15px 30px; background: rgba(0,0,0,0.2);
+            color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; font-weight: 600;
+        }
+        
+        .report-table td {
+            padding: 18px 30px; border-bottom: 1px solid var(--border); font-size: 0.9rem;
+        }
+        
+        .report-table tr:last-child td { border-bottom: none; }
+        .report-table tr:hover { background: rgba(255,255,255,0.02); }
+
+        /* File Type Badge */
+        .type-badge {
+            padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; font-family: var(--font-mono);
+        }
+        .tb-pdf { background: rgba(239, 68, 68, 0.15); color: var(--pdf-red); border: 1px solid rgba(239, 68, 68, 0.3); }
+        .tb-csv { background: rgba(16, 185, 129, 0.15); color: var(--csv-green); border: 1px solid rgba(16, 185, 129, 0.3); }
+
+        /* Status Badge */
+        .status-badge { display: flex; align-items: center; gap: 6px; font-size: 0.85rem; }
+        .dot { width: 8px; height: 8px; border-radius: 50%; }
+        .st-ready .dot { background: var(--csv-green); }
+        .st-proc .dot { background: #f59e0b; animation: pulse 1s infinite; }
+
+        .btn-download-icon {
+            width: 35px; height: 35px; border-radius: 8px; border: 1px solid var(--border);
+            background: transparent; color: var(--text-muted); display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: 0.2s;
+        }
+        .btn-download-icon:hover { background: var(--primary); color: white; border-color: var(--primary); }
+
+        @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .form-grid { grid-template-columns: 1fr; }
+            .action-row { flex-direction: column; }
+            .btn-gen { width: 100%; justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="sidebar">
+        <div class="brand"><i class="fa-solid fa-user-doctor"></i> DocPortal</div>
+        <ul class="nav-menu">
+            <li class="nav-item"><a href="{{ url_for('doctor_dashboard') }}"><i class="fa-solid fa-table-columns"></i> Dashboard</a></li>
+            <li class="nav-item"><a href="{{ url_for('my_patients') }}"><i class="fa-solid fa-hospital-user"></i> My Patients</a></li>
+            <li class="nav-item"><a href="{{ url_for('assign_patients_page') }}"><i class="fa-solid fa-user-plus"></i> Assign Patients</a></li>
+            <li class="nav-item"><a href="{{ url_for('doctor_ai_suggestions') }}"><i class="fa-solid fa-brain"></i> AI Suggestions</a></li>
+            <li class="nav-item"><a href="{{ url_for('doctor_reports') }}" class="active"><i class="fa-solid fa-file-medical"></i> Reports</a></li>
+            <li class="nav-item" style="margin-top: 20px;"><a href="{{ url_for('logout') }}"><i class="fa-solid fa-arrow-right-from-bracket"></i> Logout</a></li>
+        </ul>
+    </nav>
+
+    <main class="main-content">
+        
+        <div class="page-header">
+            <h1>Generate / Download Reports</h1>
+            <p>Export detailed patient vitals history and analysis for offline review.</p>
+        </div>
+
+        <section class="generator-card">
+            <div class="card-title">
+                <div class="card-icon"><i class="fa-solid fa-file-contract"></i></div>
+                <h3 style="font-size: 1.1rem; font-weight: 600;">Create New Patient Report</h3>
+            </div>
+
+            <form id="reportForm" method="GET">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Select Patient</label>
+                        <select class="form-input" name="patient_id" id="patient_id" required>
+                            <option value="" disabled selected>-- Select a Patient --</option>
+                            {% for patient in patients %}
+                            <option value="{{ patient[0] }}">{{ patient[1] }} (ID: {{ patient[0] }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Start Date</label>
+                        <input type="date" class="form-input" name="start_date" id="start_date">
+                    </div>
+
+                    <div class="form-group">
+                        <label>End Date</label>
+                        <input type="date" class="form-input" name="end_date" id="end_date">
+                    </div>
+                </div>
+
+                <div class="action-row">
+                    <button type="button" class="btn-gen btn-pdf" onclick="submitReport('PDF')">
+                        <i class="fa-solid fa-file-pdf"></i> Generate PDF Report
+                    </button>
+                    <button type="button" class="btn-gen btn-csv" onclick="submitReport('CSV')">
+                        <i class="fa-solid fa-file-csv"></i> Generate CSV Data
+                    </button>
+                </div>
+            </form>
+        </section>
+
+        <section class="history-section">
+            <div class="history-header">
+                <h3>Recent Downloads</h3>
+                <button style="background:transparent; border:none; color:var(--primary); cursor:pointer; font-size:0.9rem;">View All</button>
+            </div>
+            
+            <table class="report-table">
+                <thead>
+                    <tr>
+                        <th>Report Name</th>
+                        <th>Generated Date</th>
+                        <th>Format</th>
+                        <th>Status</th>
+                        <th style="text-align: right;">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="historyTable">
+                    <!-- History rows would be populated here dynamically in a real app -->
+                </tbody>
+            </table>
+        </section>
+
+    </main>
+
+    <script>
+        function submitReport(type) {
+            const form = document.getElementById('reportForm');
+            const patientId = document.getElementById('patient_id').value;
+            const patientName = document.getElementById('patient_id').options[document.getElementById('patient_id').selectedIndex]?.text;
+            
+            if (!patientId) {
+                alert('Please select a patient.');
+                return;
+            }
+
+            const startDate = document.getElementById('start_date').value;
+            const endDate = document.getElementById('end_date').value;
+            let url = '';
+
+            if (type === 'PDF') {
+                url = "{{ url_for('generate_doctor_report_pdf') }}";
+            } else {
+                url = "{{ url_for('generate_doctor_report_csv') }}";
+            }
+
+            // Construct query parameters
+            const params = new URLSearchParams({
+                patient_id: patientId,
+                start_date: startDate,
+                end_date: endDate
+            });
+
+            // Simulate UI update before redirecting/downloading
+            generateReportUI(type, patientName);
+
+            // In a real application, you might use fetch() to trigger the generation 
+            // and handle the download, or just redirect the window location.
+            // For file downloads, setting window.location is often easiest.
+            setTimeout(() => {
+                window.location.href = `${url}?${params.toString()}`;
+            }, 1000); // Small delay to show the "Processing" state
+        }
+
+        function generateReportUI(type, patientName) {
+            const table = document.getElementById('historyTable');
+            const date = new Date().toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true });
+            
+            // Add "Processing" Row
+            const newRow = document.createElement('tr');
+            const badgeClass = type === 'PDF' ? 'tb-pdf' : 'tb-csv';
+            
+            newRow.innerHTML = `
+                <td style="font-weight: 500;">
+                    <i class="fa-solid fa-circle-notch fa-spin" style="color:var(--primary); margin-right:8px;"></i>
+                    Generating Report for ${patientName}...
+                </td>
+                <td style="color: var(--text-muted);">Just Now</td>
+                <td><span class="type-badge ${badgeClass}">${type}</span></td>
+                <td>
+                    <div class="status-badge st-proc">
+                        <div class="dot"></div> Processing
+                    </div>
+                </td>
+                <td style="text-align: right;">
+                    <button class="btn-download-icon" style="opacity:0.5; cursor:not-allowed"><i class="fa-solid fa-download"></i></button>
+                </td>
+            `;
+            
+            // Insert at top
+            if(table.firstChild) {
+                table.insertBefore(newRow, table.firstChild);
+            } else {
+                table.appendChild(newRow);
+            }
+
+            // Simulate Completion update (visual only, actual download handled by window.location)
+            setTimeout(() => {
+                newRow.innerHTML = `
+                    <td style="font-weight: 500;">
+                        <i class="fa-regular fa-file-lines" style="color:var(--text-muted); margin-right:8px;"></i>
+                        Report_${patientName.split(' ')[0]}_${type}
+                    </td>
+                    <td style="color: var(--text-muted);">${date}</td>
+                    <td><span class="type-badge ${badgeClass}">${type}</span></td>
+                    <td>
+                        <div class="status-badge st-ready">
+                            <div class="dot"></div> Ready
+                        </div>
+                    </td>
+                    <td style="text-align: right;">
+                        <button class="btn-download-icon" title="Download Again"><i class="fa-solid fa-download"></i></button>
+                    </td>
+                `;
+            }, 2000);
+        }
+    </script>
+</body>
+</html>

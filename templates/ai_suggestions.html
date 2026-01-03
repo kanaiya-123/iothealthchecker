@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Neural Core | Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            /* AI Theme: Deep Purple & Neon Pink */
+            --bg-dark: #0b0c15;
+            --bg-panel: #151621;
+            --ai-primary: #d946ef; /* Neon Pink */
+            --ai-secondary: #8b5cf6; /* Violet */
+            --text-main: #e2e8f0;
+            --text-muted: #64748b;
+            --border-light: rgba(255, 255, 255, 0.08);
+            --font-tech: 'JetBrains Mono', monospace;
+            --font-ui: 'Inter', sans-serif;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: var(--font-ui);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* --- SIDEBAR --- */
+        .sidebar {
+            width: 260px;
+            background: var(--bg-panel);
+            border-right: 1px solid var(--border-light);
+            padding: 25px;
+            display: flex; flex-direction: column;
+        }
+        .logo { color: var(--ai-secondary); font-family: var(--font-tech); font-weight: 700; margin-bottom: 40px; display: flex; align-items: center; gap: 10px; font-size: 1.2rem; }
+        .nav-item { padding: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 10px; margin-bottom: 5px; text-decoration: none; border-radius: 8px; transition: all 0.2s; font-size: 0.9rem; font-weight: 500;}
+        .nav-item:hover, .nav-item.active { background: rgba(217, 70, 239, 0.1); color: var(--ai-primary); }
+
+        /* --- MAIN CONTENT --- */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Header */
+        .toolbar {
+            padding: 20px 30px;
+            background: rgba(11, 12, 21, 0.95);
+            border-bottom: 1px solid var(--border-light);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .model-badge {
+            display: flex; align-items: center; gap: 10px;
+            background: rgba(139, 92, 246, 0.1); padding: 8px 16px; border-radius: 20px;
+            border: 1px solid var(--ai-secondary); color: var(--ai-secondary); font-family: var(--font-tech); font-size: 0.85rem;
+        }
+        .pulse-dot { width: 8px; height: 8px; background: var(--ai-primary); border-radius: 50%; animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(217, 70, 239, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(217, 70, 239, 0); } 100% { box-shadow: 0 0 0 0 rgba(217, 70, 239, 0); } }
+
+        /* GRID LAYOUT */
+        .ai-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr; /* Controls vs Stream */
+            gap: 25px;
+            padding: 30px;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        /* PANEL STYLES */
+        .panel {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-light);
+            border-radius: 16px;
+            padding: 25px;
+            display: flex; flex-direction: column;
+            overflow: hidden;
+        }
+        .panel-header { font-size: 1.1rem; font-weight: 700; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+
+        /* --- LEFT COLUMN: CONTROLS --- */
+        .control-group { margin-bottom: 25px; }
+        .control-label { display: block; margin-bottom: 10px; color: var(--text-muted); font-size: 0.9rem; }
+        
+        /* Custom Slider */
+        .slider-container { display: flex; align-items: center; gap: 15px; }
+        input[type=range] {
+            flex: 1; -webkit-appearance: none; height: 6px; background: #333; border-radius: 3px; outline: none;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none; width: 18px; height: 18px; background: var(--ai-primary); border-radius: 50%; cursor: pointer;
+            box-shadow: 0 0 10px var(--ai-primary);
+        }
+        .val-display { font-family: var(--font-tech); color: var(--ai-primary); width: 40px; text-align: right; }
+
+        /* System Prompt Area */
+        .prompt-box {
+            background: #0f1016;
+            border: 1px solid var(--border-light);
+            border-radius: 8px;
+            padding: 15px;
+            color: #a5b4fc;
+            font-family: var(--font-tech);
+            font-size: 0.85rem;
+            resize: none;
+            height: 150px;
+            width: 100%;
+            outline: none;
+        }
+        .prompt-box:focus { border-color: var(--ai-secondary); }
+
+        /* --- RIGHT COLUMN: REVIEW STREAM --- */
+        .review-stream {
+            overflow-y: auto;
+            padding-right: 5px;
+            display: flex; flex-direction: column; gap: 15px;
+            padding-bottom: 50px;
+        }
+
+        .ai-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border-light);
+            border-left: 4px solid var(--ai-secondary);
+            border-radius: 8px;
+            padding: 20px;
+            position: relative;
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        .ai-card-header { display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 0.85rem; color: var(--text-muted); }
+        .ai-badge { background: #333; padding: 2px 8px; border-radius: 4px; font-family: var(--font-tech); }
+
+        .symptom-text { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 8px; font-style: italic; }
+        .response-text { color: var(--text-main); font-size: 0.95rem; line-height: 1.5; margin-bottom: 15px; }
+
+        .confidence-meter {
+            display: flex; align-items: center; gap: 10px; font-size: 0.8rem; font-family: var(--font-tech); margin-bottom: 15px;
+        }
+        .c-bar-bg { width: 100px; height: 6px; background: #333; border-radius: 3px; }
+        .c-bar-fill { height: 100%; background: var(--ai-primary); border-radius: 3px; }
+
+        .card-actions { display: flex; gap: 10px; justify-content: flex-end; }
+        .btn-action {
+            padding: 8px 16px; border-radius: 6px; border: none; font-weight: 600; cursor: pointer; transition: 0.2s; display: flex; gap: 6px; align-items: center;
+            text-decoration: none; font-size: 0.85rem;
+        }
+        .btn-approve { background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); }
+        .btn-approve:hover { background: #10b981; color: #000; }
+        
+        .btn-flag { background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); }
+        .btn-flag:hover { background: #ef4444; color: #fff; }
+
+        .btn-edit { background: transparent; color: var(--text-muted); border: 1px solid var(--border-light); }
+        .btn-edit:hover { color: white; border-color: white; }
+
+        @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    </style>
+</head>
+<body>
+
+    <nav class="sidebar">
+        <div class="logo"><i class="fa-solid fa-brain"></i> NEURAL_CORE</div>
+        <a href="/admin_dashboard" class="nav-item"><i class="fa-solid fa-gauge-high"></i> Dashboard</a>
+        <a href="/admin/doctors" class="nav-item"><i class="fa-solid fa-user-doctor"></i> Manage Doctors</a>
+        <a href="/admin/patients" class="nav-item"><i class="fa-solid fa-hospital-user"></i> Manage Patients</a>
+        <a href="/admin/devices" class="nav-item"><i class="fa-solid fa-microchip"></i> Manage Devices</a>
+        <a href="/admin/health_data" class="nav-item"><i class="fa-solid fa-database"></i> Health Data</a>
+        <a href="/admin/ai_suggestions" class="nav-item active"><i class="fa-solid fa-wand-magic-sparkles"></i> AI Suggestions</a>
+        <a href="/admin/reports" class="nav-item"><i class="fa-solid fa-chart-line"></i> Reports</a>
+        <a href="/admin/settings" class="nav-item"><i class="fa-solid fa-sliders"></i> Settings</a>
+        <a href="/logout" class="nav-item" style="color: #ef4444; margin-top: auto;"><i class="fa-solid fa-power-off"></i> Logout</a>
+    </nav>
+
+    <div class="main-content">
+        
+        <div class="toolbar">
+            <h2 style="font-size: 1.2rem;">AI Suggestion Oversight</h2>
+            <div class="model-badge">
+                <div class="pulse-dot"></div>
+                GPT-4o-Medical (Online)
+            </div>
+        </div>
+
+        <div class="ai-grid">
+            
+            <div class="panel">
+                <div class="panel-header">
+                    Model Configuration
+                    <i class="fa-solid fa-sliders" style="color: var(--ai-primary)"></i>
+                </div>
+
+                <div class="control-group">
+                    <label class="control-label">Temperature (Creativity)</label>
+                    <div class="slider-container">
+                        <input type="range" min="0" max="100" value="30" id="tempSlider">
+                        <span class="val-display" id="tempVal">0.3</span>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label class="control-label">Confidence Threshold</label>
+                    <div class="slider-container">
+                        <input type="range" min="0" max="100" value="85" id="confSlider">
+                        <span class="val-display" id="confVal">85%</span>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label class="control-label">Max Token Output</label>
+                    <div class="slider-container">
+                        <input type="range" min="100" max="2000" value="500">
+                        <span class="val-display">500</span>
+                    </div>
+                </div>
+
+                <div class="control-group" style="margin-top: auto;">
+                    <label class="control-label">System Prompt (Override)</label>
+                    <textarea class="prompt-box">You are a medical assistant IoT AI. Analyze the provided vitals (Heart Rate, SpO2, Temp) and suggest immediate actions. Be concise. Do not diagnose serious conditions without a disclaimer.</textarea>
+                    <button style="width: 100%; margin-top: 10px; padding: 10px; background: var(--ai-secondary); color: white; border: none; border-radius: 6px; cursor: pointer;">Update Prompt</button>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-header">
+                    Live Suggestion Review
+                    <div style="font-size: 0.8rem; font-weight: 400; color: var(--text-muted);">
+                        Pending Approval: <span style="color: white; font-weight: 700;">{{ suggestions_list|length }}</span>
+                    </div>
+                </div>
+
+                <div class="review-stream" id="reviewStream">
+                    {% for sug in suggestions_list %}
+                    <div class="ai-card">
+                        <div class="ai-card-header">
+                            <span><i class="fa-solid fa-user-injured"></i> {{ sug[1] }}</span>
+                            <span class="ai-badge">ID-{{ sug[0] }}</span>
+                        </div>
+                        
+                        <div class="symptom-text">Generated on: {{ sug[4].strftime('%Y-%m-%d %H:%M') }}</div>
+                        <div class="response-text">
+                            <i class="fa-solid fa-robot" style="color: var(--ai-primary); margin-right: 5px;"></i> 
+                            {{ sug[2] }}
+                        </div>
+
+                        <div class="confidence-meter">
+                            <span>Status: {{ 'Verified' if sug[3] else 'Pending Review' }}</span>
+                            <div class="c-bar-bg">
+                                <div class="c-bar-fill" style="width: {{ '100' if sug[3] else '65' }}%; background: {{ '#10b981' if sug[3] else '#f59e0b' }}"></div>
+                            </div>
+                        </div>
+
+                        <div class="card-actions">
+                            {% if not sug[3] %}
+                            <a href="/admin/ai_suggestions/verify/{{ sug[0] }}" class="btn-action btn-approve"><i class="fa-solid fa-check"></i> Verify</a>
+                            {% endif %}
+                            <a href="/admin/ai_suggestions/delete/{{ sug[0] }}" class="btn-action btn-flag" onclick="return confirm('Delete this suggestion?');"><i class="fa-solid fa-trash"></i> Delete</a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // --- SLIDER LOGIC ---
+        const tempSlider = document.getElementById('tempSlider');
+        const tempVal = document.getElementById('tempVal');
+        tempSlider.addEventListener('input', (e) => {
+            tempVal.innerText = (e.target.value / 100).toFixed(1);
+        });
+
+        const confSlider = document.getElementById('confSlider');
+        const confVal = document.getElementById('confVal');
+        confSlider.addEventListener('input', (e) => {
+            confVal.innerText = e.target.value + "%";
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Doctors | Admin Core</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --bg-dark: #0b0c15;
+            --bg-panel: #151621;
+            --accent-primary: #7c3aed; /* Purple */
+            --accent-cyan: #06b6d4;
+            --text-main: #e2e8f0;
+            --text-muted: #64748b;
+            --border-light: rgba(255, 255, 255, 0.08);
+            --font-tech: 'JetBrains Mono', monospace;
+            --font-ui: 'Inter', sans-serif;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: var(--font-ui);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* --- SIDEBAR --- */
+        .sidebar {
+            width: 260px;
+            background: var(--bg-panel);
+            border-right: 1px solid var(--border-light);
+            padding: 25px;
+            display: flex; flex-direction: column;
+        }
+        .logo { color: var(--accent-cyan); font-family: var(--font-tech); font-weight: 700; margin-bottom: 40px; display: flex; align-items: center; gap: 10px; font-size: 1.2rem;}
+        .nav-item { padding: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 10px; margin-bottom: 5px; text-decoration: none; border-radius: 8px; transition: all 0.2s; font-size: 0.9rem; font-weight: 500;}
+        .nav-item:hover, .nav-item.active { background: rgba(124, 58, 237, 0.1); color: var(--accent-primary); }
+
+        /* --- MAIN CONTENT --- */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 0;
+            position: relative;
+        }
+
+        /* Header Toolbar */
+        .toolbar {
+            padding: 20px 30px;
+            background: rgba(11, 12, 21, 0.9);
+            border-bottom: 1px solid var(--border-light);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .search-box {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-light);
+            padding: 10px 15px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 350px;
+            color: var(--text-muted);
+        }
+        .search-box input {
+            background: transparent; border: none; outline: none; color: white; width: 100%; font-family: var(--font-tech); font-size: 0.9rem;
+        }
+
+        .btn-add {
+            background: var(--accent-primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex; align-items: center; gap: 8px;
+            transition: 0.3s;
+            text-decoration: none;
+        }
+        .btn-add:hover { background: #6d28d9; box-shadow: 0 0 15px rgba(124, 58, 237, 0.4); }
+
+        /* DOCTOR GRID CONTAINER */
+        .doctor-grid {
+            padding: 30px;
+            overflow-y: auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+        }
+
+        /* CARD DESIGN */
+        .doc-card {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-light);
+            border-radius: 16px;
+            padding: 25px;
+            position: relative;
+            transition: transform 0.2s, border-color 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .doc-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent-primary);
+        }
+
+        /* Status Beacon */
+        .status-dot {
+            position: absolute;
+            top: 20px; right: 20px;
+            width: 10px; height: 10px;
+            border-radius: 50%;
+            background: #333;
+            box-shadow: 0 0 0 4px rgba(255,255,255,0.05);
+        }
+        .s-online { background: #10b981; box-shadow: 0 0 10px #10b981; }
+        .s-busy { background: #f59e0b; }
+        .s-offline { background: #64748b; }
+
+        .avatar-container {
+            width: 80px; height: 80px;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 2px solid var(--border-light);
+            margin-bottom: 15px;
+            position: relative;
+        }
+        .avatar-container img { width: 100%; height: 100%; object-fit: cover; }
+
+        .doc-name { font-size: 1.1rem; font-weight: 700; color: var(--text-main); margin-bottom: 5px; }
+        .doc-email { color: var(--text-muted); font-size: 0.85rem; margin-bottom: 5px;}
+        .doc-spec { color: var(--accent-cyan); font-size: 0.85rem; font-family: var(--font-tech); margin-bottom: 20px; text-transform: uppercase; letter-spacing: 1px;}
+
+        .card-actions {
+            width: 100%;
+            display: flex;
+            gap: 10px;
+            margin-top: auto;
+        }
+        .btn-card {
+            flex: 1;
+            padding: 8px;
+            border-radius: 6px;
+            border: 1px solid var(--border-light);
+            background: transparent;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: 0.2s;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            font-size: 0.9rem;
+        }
+        .btn-card:hover { color: white; border-color: white; }
+        .btn-delete:hover { color: #ef4444; border-color: #ef4444; }
+
+    </style>
+</head>
+<body>
+
+    <nav class="sidebar">
+        <div class="logo">
+            <i class="fa-solid fa-network-wired"></i>
+            ADMIN_CORE
+        </div>
+
+        <a href="/admin_dashboard" class="nav-item"><i class="fa-solid fa-gauge-high"></i> Dashboard</a>
+        <a href="/admin/doctors" class="nav-item active"><i class="fa-solid fa-user-doctor"></i> Manage Doctors</a>
+        <a href="/admin/patients" class="nav-item"><i class="fa-solid fa-hospital-user"></i> Manage Patients</a>
+        <a href="/admin/devices" class="nav-item"><i class="fa-solid fa-microchip"></i> Manage Devices</a>
+        <a href="/admin/health_data" class="nav-item"><i class="fa-solid fa-database"></i> Health Data</a>
+        <a href="/admin/ai_suggestions" class="nav-item"><i class="fa-solid fa-robot"></i> AI Suggestions</a>
+        <a href="/admin/reports" class="nav-item"><i class="fa-solid fa-chart-line"></i> Reports</a>
+        <a href="/admin/settings" class="nav-item"><i class="fa-solid fa-sliders"></i> Settings</a>
+        <a href="/logout" class="nav-item" style="color: var(--accent-danger); margin-top: auto;"><i class="fa-solid fa-power-off"></i> Logout</a>
+    </nav>
+
+    <div class="main-content">
+        
+        <div class="toolbar">
+            <div class="search-box">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="searchInput" placeholder="Search by name or email..." onkeyup="filterDoctors()">
+            </div>
+            <a href="{{ url_for('add_doctor') }}" class="btn-add">
+                <i class="fa-solid fa-plus"></i> Add New Doctor
+            </a>
+        </div>
+
+        <div class="doctor-grid" id="doctorGrid">
+            {% for doctor in doctors_list %}
+            <div class="doc-card" data-name="{{ doctor[1] | lower }}" data-email="{{ doctor[2] | lower }}">
+                <div class="status-dot s-online" title="Status: Online"></div>
+                <div class="avatar-container">
+                    <img src="https://ui-avatars.com/api/?name={{ doctor[1] }}&background=random&color=fff" alt="Avatar">
+                </div>
+                <div class="doc-name">{{ doctor[1] }}</div>
+                <div class="doc-email">{{ doctor[2] }}</div>
+                <div class="doc-spec">General Specialist</div> 
+                
+                <div class="card-actions">
+                    <a href="{{ url_for('edit_doctor', doctor_id=doctor[0]) }}" class="btn-card"><i class="fa-solid fa-pen"></i> Edit</a>
+                    <a href="{{ url_for('delete_doctor', doctor_id=doctor[0]) }}" class="btn-card btn-delete" onclick="return confirm('Are you sure you want to delete {{ doctor[1] }}?');"><i class="fa-solid fa-trash"></i> Delete</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+    </div>
+
+    <script>
+        function filterDoctors() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const cards = document.querySelectorAll('.doc-card');
+            
+            cards.forEach(card => {
+                const name = card.getAttribute('data-name');
+                const email = card.getAttribute('data-email');
+                if (name.includes(query) || email.includes(query)) {
+                    card.style.display = 'flex';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+    </script>
+</body>
+</html>

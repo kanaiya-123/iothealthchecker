@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Health Data Analytics | Admin Core</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            /* Data Theme: Deep Blue & Cyan */
+            --bg-dark: #0b0c15;
+            --bg-panel: #151621;
+            --data-primary: #3b82f6; /* Royal Blue */
+            --data-accent: #06b6d4;  /* Cyan */
+            --text-main: #e2e8f0;
+            --text-muted: #64748b;
+            --border-light: rgba(255, 255, 255, 0.08);
+            --font-tech: 'JetBrains Mono', monospace;
+            --font-ui: 'Inter', sans-serif;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: var(--font-ui);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* --- SIDEBAR --- */
+        .sidebar {
+            width: 260px;
+            background: var(--bg-panel);
+            border-right: 1px solid var(--border-light);
+            padding: 25px;
+            display: flex; flex-direction: column;
+        }
+        .logo { color: var(--data-primary); font-family: var(--font-tech); font-weight: 700; margin-bottom: 40px; display: flex; align-items: center; gap: 10px; font-size: 1.2rem; }
+        .nav-item { padding: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 10px; margin-bottom: 5px; text-decoration: none; border-radius: 8px; transition: all 0.2s; font-size: 0.9rem; font-weight: 500;}
+        .nav-item:hover, .nav-item.active { background: rgba(59, 130, 246, 0.1); color: var(--data-primary); }
+
+        /* --- MAIN CONTENT --- */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Toolbar */
+        .toolbar {
+            padding: 20px 30px;
+            background: rgba(11, 12, 21, 0.95);
+            border-bottom: 1px solid var(--border-light);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .filter-group {
+            display: flex; gap: 10px;
+        }
+        
+        .input-dark {
+            background: var(--bg-panel); border: 1px solid var(--border-light); color: white;
+            padding: 8px 12px; border-radius: 6px; outline: none; font-size: 0.9rem;
+        }
+        .input-dark:focus { border-color: var(--data-accent); }
+
+        .btn-filter {
+            background: var(--data-primary); color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;
+        }
+
+        .export-group { display: flex; gap: 10px; }
+        .btn-export {
+            background: transparent; border: 1px solid var(--border-light); color: var(--text-muted);
+            padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; display: flex; align-items: center; gap: 6px;
+            transition: 0.2s; text-decoration: none;
+        }
+        .btn-export:hover { border-color: var(--data-accent); color: var(--data-accent); }
+        .btn-export.pdf:hover { border-color: #ef4444; color: #ef4444; }
+
+        /* ANALYTICS VISUALIZER (Top Half) */
+        .analytics-panel {
+            padding: 30px;
+            border-bottom: 1px solid var(--border-light);
+            background: rgba(21, 22, 33, 0.5);
+            display: flex; gap: 30px;
+            height: 250px;
+        }
+
+        .chart-box {
+            flex: 2;
+            background: var(--bg-panel); border: 1px solid var(--border-light); border-radius: 12px;
+            padding: 20px;
+            position: relative;
+            display: flex; flex-direction: column;
+        }
+        .chart-title { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 10px; }
+
+        /* CSS-Only Bar Chart */
+        .css-chart {
+            flex: 1; display: flex; align-items: flex-end; justify-content: space-between; gap: 5px; padding-top: 10px;
+        }
+        .chart-bar {
+            width: 100%; background: #334155; border-radius: 4px 4px 0 0; position: relative; transition: height 0.5s;
+        }
+        .chart-bar:hover { background: var(--data-accent); }
+        .chart-bar::after {
+            content: attr(data-val); position: absolute; top: -20px; left: 50%; transform: translateX(-50%);
+            font-size: 0.7rem; color: white; opacity: 0; transition: opacity 0.2s;
+        }
+        .chart-bar:hover::after { opacity: 1; }
+
+        .kpi-box {
+            flex: 1; display: flex; flex-direction: column; gap: 15px;
+        }
+        .kpi-card {
+            flex: 1; background: var(--bg-panel); border: 1px solid var(--border-light); border-radius: 12px;
+            padding: 15px; display: flex; align-items: center; gap: 15px;
+        }
+        .kpi-icon {
+            width: 40px; height: 40px; background: rgba(6, 182, 212, 0.1); color: var(--data-accent);
+            border-radius: 8px; display: flex; align-items: center; justify-content: center;
+        }
+        .kpi-val { font-size: 1.5rem; font-weight: 700; font-family: var(--font-tech); }
+
+        /* DATA TABLE (Bottom Half) */
+        .table-wrapper {
+            flex: 1; overflow-y: auto; padding: 0 30px 30px 30px;
+        }
+
+        .data-table {
+            width: 100%; border-collapse: collapse; margin-top: 20px;
+        }
+
+        .data-table th {
+            text-align: left; padding: 15px; color: var(--text-muted); font-size: 0.85rem;
+            position: sticky; top: 0; background: var(--bg-dark); z-index: 2;
+        }
+
+        .data-table td {
+            padding: 15px; border-bottom: 1px solid var(--border-light); font-size: 0.9rem;
+        }
+        
+        .data-val { font-family: var(--font-tech); color: var(--data-accent); }
+        .ts-cell { color: var(--text-muted); font-size: 0.8rem; }
+
+        .badge-risk {
+            padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; text-transform: uppercase; font-weight: 600;
+        }
+        .bg-norm { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+        .bg-high { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="logo"><i class="fa-solid fa-database"></i> DATA_VAULT</div>
+        <a href="/admin_dashboard" class="nav-item"><i class="fa-solid fa-gauge-high"></i> Dashboard</a>
+        <a href="/admin/doctors" class="nav-item"><i class="fa-solid fa-user-doctor"></i> Manage Doctors</a>
+        <a href="/admin/patients" class="nav-item"><i class="fa-solid fa-hospital-user"></i> Manage Patients</a>
+        <a href="/admin/devices" class="nav-item"><i class="fa-solid fa-microchip"></i> Manage Devices</a>
+        <a href="/admin/health_data" class="nav-item active"><i class="fa-solid fa-table-list"></i> Health Data</a>
+        <a href="/admin/ai_suggestions" class="nav-item"><i class="fa-solid fa-robot"></i> AI Suggestions</a>
+        <a href="/admin/reports" class="nav-item"><i class="fa-solid fa-chart-line"></i> Reports</a>
+        <a href="/admin/settings" class="nav-item"><i class="fa-solid fa-sliders"></i> Settings</a>
+        <a href="/logout" class="nav-item" style="color: #ef4444; margin-top: auto;"><i class="fa-solid fa-power-off"></i> Logout</a>
+    </div>
+
+    <div class="main-content">
+        
+        <div class="toolbar">
+            <form method="GET" class="filter-group">
+                <input type="text" name="patient" class="input-dark" placeholder="Patient Name / ID" value="{{ patient_filter or '' }}">
+                <input type="text" name="doctor" class="input-dark" placeholder="Filter by Doctor" value="{{ doctor_filter or '' }}">
+                <input type="date" name="date" class="input-dark" value="{{ date_filter or '' }}">
+                <button type="submit" class="btn-filter">Apply Filters</button>
+            </form>
+
+            <div class="export-group">
+                <a href="{{ url_for('export_health_data_csv') }}" class="btn-export"><i class="fa-solid fa-file-csv"></i> CSV</a>
+                <a href="{{ url_for('export_health_data_pdf') }}" class="btn-export pdf"><i class="fa-solid fa-file-pdf"></i> PDF Report</a>
+            </div>
+        </div>
+
+        <div class="analytics-panel">
+            <div class="chart-box">
+                <div class="chart-title">Real-time Vitals Stream (Recent Samples)</div>
+                <div class="css-chart" id="barChart">
+                    </div>
+            </div>
+
+            <div class="kpi-box">
+                <div class="kpi-card">
+                    <div class="kpi-icon"><i class="fa-solid fa-bolt"></i></div>
+                    <div>
+                        <div class="kpi-val">{{ health_data_list|length }}</div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted);">Loaded Readings</div>
+                    </div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-icon"><i class="fa-solid fa-triangle-exclamation" style="color: #ef4444; background: rgba(239,68,68,0.1)"></i></div>
+                    <div>
+                        <div class="kpi-val" style="color: #ef4444" id="criticalCount">0</div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted);">Detected Spikes</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-wrapper">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Timestamp</th>
+                        <th>Patient Name</th>
+                        <th>Heart Rate (bpm)</th>
+                        <th>SpO2 (%)</th>
+                        <th>Temp (°C)</th>
+                        <th>Risk Assessment</th>
+                    </tr>
+                </thead>
+                <tbody id="dataTable">
+                    {% for data in health_data_list %}
+                    {% set is_risk = data[2] > 100 or data[2] < 60 or data[3] < 94 or data[1] > 38 %}
+                    <tr>
+                        <td class="ts-cell">{{ data[5] }}</td>
+                        <td style="font-weight: 500">{{ data[0] }}</td>
+                        <td class="data-val" style="{{ 'color: #ef4444' if data[2] > 100 or data[2] < 60 else '' }}">{{ data[2] }}</td>
+                        <td class="data-val" style="{{ 'color: #ef4444' if data[3] < 94 else '' }}">{{ data[3] }}</td>
+                        <td class="data-val" style="{{ 'color: #ef4444' if data[1] > 38 else '' }}">{{ data[1] }}</td>
+                        <td>
+                            <span class="badge-risk {{ 'bg-high' if is_risk else 'bg-norm' }}">
+                                {{ 'High' if is_risk else 'Normal' }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+    <script>
+        const chartContainer = document.getElementById('barChart');
+        let criticalCount = 0;
+
+        function renderChart() {
+            // Get data from the table to populate the chart
+            const rows = document.querySelectorAll('#dataTable tr');
+            const dataPoints = [];
+            rows.forEach((row, index) => {
+                if (index < 20) { // Limit to 20 points
+                    const hr = parseInt(row.cells[2].innerText);
+                    dataPoints.push(hr);
+                    if(hr > 100 || hr < 60) criticalCount++;
+                }
+            });
+
+            document.getElementById('criticalCount').innerText = criticalCount;
+
+            dataPoints.reverse().forEach(val => {
+                const height = Math.min(Math.max((val / 150) * 100, 10), 100);
+                const bar = document.createElement('div');
+                bar.className = 'chart-bar';
+                bar.style.height = height + '%';
+                bar.setAttribute('data-val', val);
+                
+                if(val > 100 || val < 60) bar.style.background = "#ef4444";
+                
+                chartContainer.appendChild(bar);
+            });
+        }
+
+        window.onload = renderChart;
+    </script>
+</body>
+</html>

@@ -1,0 +1,143 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<main class="main-content">
+    <div class="header">
+        <h1>Welcome, {{ user.name }}!</h1>
+        <p>Here's your real-time health data.</p>
+    </div>
+
+    <div class="cards-container">
+        <!-- Live Temperature -->
+        <div class="card">
+            <div class="card-icon">
+                <i class="fas fa-thermometer-half"></i>
+            </div>
+            <div class="card-content">
+                <h3>Temperature</h3>
+                <p id="live-temp">-- °C</p>
+                <small>Last updated: <span id="temp-timestamp">--</span></small>
+            </div>
+        </div>
+
+        <!-- Live Humidity -->
+        <div class="card">
+            <div class="card-icon">
+                <i class="fas fa-tint"></i>
+            </div>
+            <div class="card-content">
+                <h3>Humidity</h3>
+                <p id="live-humidity">-- %</p>
+                <small>Last updated: <span id="humidity-timestamp">--</span></small>
+            </div>
+        </div>
+        
+        <!-- Placeholder for another metric -->
+        <div class="card">
+            <div class="card-icon">
+                <i class="fas fa-heartbeat"></i>
+            </div>
+            <div class="card-content">
+                <h3>Heart Rate</h3>
+                <p>{{ latest[1] if latest else '--' }} bpm</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart for Temperature and Humidity History -->
+    <div class="chart-container">
+        <h2>Sensor Data History</h2>
+        <canvas id="dht11-chart"></canvas>
+    </div>
+
+    <!-- AI Suggestions -->
+    <div class="ai-suggestions">
+        <h2>AI Health Suggestion</h2>
+        <div class="suggestion-box">
+            <p>{{ suggestion_text }}</p>
+        </div>
+    </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const tempElement = document.getElementById('live-temp');
+    const humidityElement = document.getElementById('live-humidity');
+    const tempTimestampElement = document.getElementById('temp-timestamp');
+    const humidityTimestampElement = document.getElementById('humidity-timestamp');
+    const patientId = {{ session['user_id'] }};
+
+    let dht11Chart = null; // To hold the chart instance
+
+    // Function to fetch the latest data
+    async function fetchLatestData() {
+        try {
+            const response = await fetch(`/api/get_latest_dht11_data/${patientId}`);
+            if (!response.ok) {
+                tempElement.textContent = 'Error';
+                humidityElement.textContent = 'Error';
+                return;
+            }
+            const data = await response.json();
+            
+            if (data.temperature && data.humidity) {
+                tempElement.textContent = `${data.temperature.toFixed(1)} °C`;
+                humidityElement.textContent = `${data.humidity.toFixed(1)} %`;
+                tempTimestampElement.textContent = data.timestamp;
+                humidityTimestampElement.textContent = data.timestamp;
+            } else {
+                tempElement.textContent = 'No data';
+                humidityElement.textContent = 'No data';
+            }
+        } catch (error) {
+            console.error("Error fetching latest data:", error);
+        }
+    }
+
+    // Function to fetch historical data and render the chart
+    async function renderChart() {
+        try {
+            const response = await fetch(`/api/get_historical_dht11_data/${patientId}`);
+            if (!response.ok) {
+                console.error("Could not fetch historical data");
+                return;
+            }
+            const chartData = await response.json();
+
+            const ctx = document.getElementById('dht11-chart').getContext('2d');
+            
+            if (dht11Chart) {
+                dht11Chart.destroy(); // Destroy old chart instance to avoid conflicts
+            }
+
+            dht11Chart = new Chart(ctx, {
+                type: 'line',
+                data: chartData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: false
+                        }
+                    }
+                }
+            });
+        } catch (error) {
+            console.error("Error rendering chart:", error);
+        }
+    }
+
+    // Initial fetch and render
+    fetchLatestData();
+    renderChart();
+
+    // Set interval to update data every 10 seconds
+    setInterval(() => {
+        fetchLatestData();
+        renderChart(); // Also re-render the chart periodically
+    }, 10000); 
+});
+</script>
+{% endblock %}

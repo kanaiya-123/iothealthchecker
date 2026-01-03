@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | IoT Health Checker</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* --- RESET & VARIABLES --- */
+        :root {
+            --primary: #0ea5e9; /* Medical Blue/Cyan */
+            --primary-dark: #0284c7;
+            --secondary: #64748b;
+            --bg-light: #f8fafc;
+            --white: #ffffff;
+            --text-dark: #1e293b;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --error: #ef4444;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden; /* Prevents scrollbars on fullscreen split */
+            display: flex;
+        }
+
+        /* --- LEFT SIDE: VISUALS --- */
+        .visual-side {
+            flex: 1.2; /* Takes up slightly more space */
+            background-image: linear-gradient(135deg, rgba(14, 165, 233, 0.9), rgba(37, 99, 235, 0.8)), 
+                              url('https://images.unsplash.com/photo-1576091160550-217358c7e618?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 60px;
+            color: white;
+            position: relative;
+        }
+
+        .visual-content {
+            z-index: 2;
+            max-width: 600px;
+        }
+
+        .visual-content h1 {
+            font-size: 3.5rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            line-height: 1.2;
+        }
+
+        .visual-content p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+
+        /* Decorative Circles for "IoT" feel */
+        .circle {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(5px);
+        }
+        .c1 { width: 300px; height: 300px; top: -50px; right: -50px; }
+        .c2 { width: 150px; height: 150px; bottom: 100px; left: 50px; }
+
+        /* --- RIGHT SIDE: FORM --- */
+        .form-side {
+            flex: 1;
+            background: var(--bg-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            padding: 40px;
+            position: relative;
+        }
+
+        .login-wrapper {
+            width: 100%;
+            max-width: 420px;
+            background: var(--white);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+        }
+
+        .brand-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 30px;
+        }
+
+        .brand-logo i {
+            font-size: 1.8rem;
+        }
+
+        .form-header h2 {
+            font-size: 1.8rem;
+            color: var(--text-dark);
+            margin-bottom: 10px;
+        }
+
+        .form-header p {
+            color: var(--secondary);
+            margin-bottom: 30px;
+            font-size: 0.95rem;
+        }
+
+        .alert-error {
+            background-color: #fef2f2;
+            color: var(--error);
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+            border: 1px solid #fee2e2;
+        }
+
+        /* --- INPUT GROUPS --- */
+        .input-group {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-dark);
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-wrapper i.icon-left {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--secondary);
+        }
+
+        .input-wrapper input {
+            width: 100%;
+            padding: 12px 15px 12px 45px; /* Left padding space for icon */
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        .input-wrapper input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.1);
+        }
+
+        /* Password Toggle Eye */
+        .toggle-password {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: var(--secondary);
+        }
+
+        .toggle-password:hover {
+            color: var(--primary);
+        }
+
+        /* --- ACTIONS & BUTTONS --- */
+        .form-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            font-size: 0.9rem;
+        }
+
+        .remember-me {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--secondary);
+            cursor: pointer;
+        }
+
+        .forgot-link {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 14px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+            box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
+        }
+
+        .btn-login:hover {
+            background: var(--primary-dark);
+        }
+
+        .register-link {
+            margin-top: 25px;
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--secondary);
+        }
+
+        .register-link a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .footer-credits {
+            margin-top: auto;
+            color: #94a3b8;
+            font-size: 0.8rem;
+            text-align: center;
+            padding-top: 20px;
+        }
+
+        /* --- RESPONSIVE --- */
+        @media (max-width: 900px) {
+            .visual-side {
+                display: none; /* Hide image on mobile/tablet */
+            }
+            .form-side {
+                width: 100%;
+                background: white;
+            }
+            .login-wrapper {
+                box-shadow: none;
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="visual-side">
+        <div class="circle c1"></div>
+        <div class="circle c2"></div>
+        <div class="visual-content">
+            <h1>IoT Health<br>Checker</h1>
+            <p>Real-time patient monitoring powered by Artificial Intelligence. Secure, fast, and reliable health analytics.</p>
+        </div>
+    </div>
+
+    <div class="form-side">
+        <div class="login-wrapper">
+            <div class="brand-logo">
+                <i class="fa-solid fa-heart-pulse"></i>
+                <span>HealthCheck.ai</span>
+            </div>
+
+            <div class="form-header">
+                <h2>Welcome Back</h2>
+                <p>Please enter your details to access patient data.</p>
+            </div>
+
+            {% if error %}
+            <div class="alert-error">
+                <i class="fa-solid fa-triangle-exclamation"></i> {{ error }}
+            </div>
+            {% endif %}
+
+            <form action="/login" method="POST" id="loginForm">
+                
+                <div class="input-group">
+                    <label for="email">Email Address</label>
+                    <div class="input-wrapper">
+                        <i class="fa-regular fa-envelope icon-left"></i>
+                        <input type="email" id="email" name="email" placeholder="doctor@hospital.com" required>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="password">Password</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-lock icon-left"></i>
+                        <input type="password" id="password" name="password" placeholder="••••••••" required>
+                        <i class="fa-regular fa-eye toggle-password" id="togglePassword"></i>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <label class="remember-me">
+                        <input type="checkbox"> Remember me
+                    </label>
+                    <a href="#" class="forgot-link">Forgot password?</a>
+                </div>
+
+                <button type="submit" class="btn-login">Sign In</button>
+
+                <div class="register-link">
+                    Don't have an account? <a href="/register">Register here</a>
+                </div>
+            </form>
+        </div>
+
+        <div class="footer-credits">
+            &copy; 2025 IoT Health Checker | Powered by Flask + OpenAI
+        </div>
+    </div>
+
+    <script>
+        // JavaScript for Interactivity
+
+        // 1. Password Visibility Toggle
+        const togglePassword = document.querySelector('#togglePassword');
+        const passwordInput = document.querySelector('#password');
+
+        togglePassword.addEventListener('click', function () {
+            // Toggle the type attribute
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            
+            // Toggle the eye icon
+            this.classList.toggle('fa-eye');
+            this.classList.toggle('fa-eye-slash');
+        });
+
+        // 2. Simple Client-Side Validation Effect
+        const form = document.getElementById('loginForm');
+        form.addEventListener('submit', function(e) {
+            const email = document.getElementById('email').value;
+            const pass = document.getElementById('password').value;
+
+            if(!email || !pass) {
+                e.preventDefault(); 
+                alert("Please fill in all fields.");
+            } else {
+                const btn = document.querySelector('.btn-login');
+                btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Authenticating...';
+                btn.style.opacity = '0.8';
+            }
+        });
+    </script>
+</body>
+</html>

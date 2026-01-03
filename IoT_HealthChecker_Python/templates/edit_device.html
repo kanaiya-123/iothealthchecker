@@ -1,0 +1,25 @@
+{% extends 'admin_layout.html' %}
+{% block admin_content %}
+<h4 class="fw-bold text-primary mb-3">Edit Device</h4>
+<div class="card">
+  <div class="card-body">
+    <form method="POST">
+      <div class="mb-3">
+        <label for="device_id" class="form-label">Device ID</label>
+        <input type="text" class="form-control" id="device_id" name="device_id" value="{{ device[1] }}" disabled>
+      </div>
+      <div class="mb-3">
+        <label for="patient_id" class="form-label">Assign Patient</label>
+        <select class="form-select" id="patient_id" name="patient_id">
+          <option value="">Select a patient</option>
+          {% for patient in patients %}
+          <option value="{{ patient[0] }}" {% if device[2] == patient[0] %}selected{% endif %}>{{ patient[1] }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <button type="submit" class="btn btn-primary">Update Device</button>
+      <a href="{{ url_for('manage_devices') }}" class="btn btn-secondary">Cancel</a>
+    </form>
+  </div>
+</div>
+{% endblock %}

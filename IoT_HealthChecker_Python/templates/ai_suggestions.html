@@ -1,0 +1,44 @@
+{% extends 'admin_layout.html' %}
+{% block admin_content %}
+<h4 class="fw-bold text-primary mb-3">Manage AI Health Suggestions</h4>
+<div class="card">
+  <div class="card-body">
+    <h5 class="card-title">All AI Suggestions</h5>
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Patient</th>
+          <th>Suggestion</th>
+          <th>Status</th>
+          <th>Timestamp</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for suggestion in suggestions_list %}
+        <tr>
+          <td>{{ suggestion[0] }}</td>
+          <td>{{ suggestion[1] }}</td>
+          <td>{{ suggestion[2] }}</td>
+          <td>
+            {% if suggestion[3] %}
+            <span class="badge bg-success">Verified</span>
+            {% else %}
+            <span class="badge bg-warning">Not Verified</span>
+            {% endif %}
+          </td>
+          <td>{{ suggestion[4] }}</td>
+          <td>
+            {% if not suggestion[3] %}
+            <a href="{{ url_for('verify_suggestion', suggestion_id=suggestion[0]) }}" class="btn btn-sm btn-success">Verify</a>
+            {% endif %}
+            <a href="{{ url_for('delete_suggestion', suggestion_id=suggestion[0]) }}" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this suggestion?');">Delete</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

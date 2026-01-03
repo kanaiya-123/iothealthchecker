@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Config | Admin Core</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            /* Theme Variables */
+            --bg-dark: #0b0c15;
+            --bg-panel: #151621;
+            --accent-primary: #7c3aed; /* Purple */
+            --accent-cyan: #06b6d4;   /* Cyan */
+            --accent-danger: #ef4444; /* Red */
+            --accent-success: #10b981; /* Green */
+            --text-main: #e2e8f0;
+            --text-muted: #64748b;
+            --border-light: rgba(255, 255, 255, 0.08);
+            --font-tech: 'JetBrains Mono', monospace;
+            --font-ui: 'Inter', sans-serif;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: var(--font-ui);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* --- SIDEBAR --- */
+        .sidebar {
+            width: 260px;
+            background: var(--bg-panel);
+            border-right: 1px solid var(--border-light);
+            padding: 25px;
+            display: flex; flex-direction: column;
+        }
+        .logo { color: var(--text-main); font-family: var(--font-tech); font-weight: 700; margin-bottom: 40px; display: flex; align-items: center; gap: 10px; font-size: 1.2rem; }
+        .logo i { color: var(--accent-cyan); }
+        .nav-item { padding: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 10px; margin-bottom: 5px; text-decoration: none; border-radius: 8px; transition: all 0.2s; font-size: 0.9rem; font-weight: 500;}
+        .nav-item:hover, .nav-item.active { background: rgba(255, 255, 255, 0.05); color: #fff; }
+
+        /* --- MAIN CONTENT --- */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto; /* Scrollable main area */
+        }
+
+        /* Toolbar */
+        .toolbar {
+            padding: 20px 30px;
+            background: rgba(11, 12, 21, 0.95);
+            border-bottom: 1px solid var(--border-light);
+            position: sticky; top: 0; z-index: 10;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .page-title h2 { font-size: 1.2rem; margin-bottom: 5px; }
+        .page-title p { font-size: 0.85rem; color: var(--text-muted); }
+
+        .btn-save {
+            background: var(--accent-primary); color: white; border: none; padding: 10px 24px; 
+            border-radius: 6px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px;
+            box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3); transition: 0.2s;
+        }
+        .btn-save:hover { background: #6d28d9; transform: translateY(-2px); }
+
+        /* SETTINGS GRID */
+        .settings-container {
+            padding: 30px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            gap: 25px;
+            padding-bottom: 100px;
+        }
+
+        /* SETTING CARD */
+        .set-card {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-light);
+            border-radius: 12px;
+            padding: 25px;
+            position: relative;
+        }
+
+        .card-header { margin-bottom: 25px; display: flex; align-items: center; gap: 12px; }
+        .card-icon { 
+            width: 40px; height: 40px; background: rgba(255,255,255,0.05); border-radius: 8px;
+            display: flex; align-items: center; justify-content: center; color: var(--accent-cyan);
+        }
+        .card-title h3 { font-size: 1rem; margin-bottom: 2px; }
+        .card-title p { font-size: 0.8rem; color: var(--text-muted); }
+
+        /* Form Elements */
+        .form-group { margin-bottom: 20px; }
+        .form-label { display: block; margin-bottom: 8px; color: var(--text-muted); font-size: 0.85rem; }
+        
+        .input-tech {
+            width: 100%; background: #0b0c15; border: 1px solid var(--border-light);
+            padding: 12px; color: white; border-radius: 6px; outline: none; font-family: var(--font-ui);
+            transition: border-color 0.2s;
+        }
+        .input-tech:focus { border-color: var(--accent-cyan); }
+
+        /* Custom Toggle Switch */
+        .toggle-row {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 15px 0; border-bottom: 1px solid var(--border-light);
+        }
+        .toggle-row:last-child { border-bottom: none; }
+        
+        .switch { position: relative; display: inline-block; width: 46px; height: 24px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        
+        .slider {
+            position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #334155; transition: .4s; border-radius: 24px;
+        }
+        .slider:before {
+            position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px;
+            background-color: white; transition: .4s; border-radius: 50%;
+        }
+        
+        input:checked + .slider { background-color: var(--accent-primary); box-shadow: 0 0 10px rgba(124, 58, 237, 0.4); }
+        input:checked + .slider:before { transform: translateX(22px); }
+
+        /* Database Section Specifics */
+        .db-stat {
+            display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.85rem;
+        }
+        .progress-bg { height: 8px; background: #334155; border-radius: 4px; overflow: hidden; margin-bottom: 20px; }
+        .progress-fill { height: 100%; width: 45%; background: var(--accent-cyan); border-radius: 4px; }
+
+        .btn-backup {
+            width: 100%; padding: 12px; background: rgba(6, 182, 212, 0.1); border: 1px solid var(--accent-cyan);
+            color: var(--accent-cyan); border-radius: 6px; cursor: pointer; font-weight: 600; display: flex; justify-content: center; align-items: center; gap: 8px;
+            text-decoration: none;
+        }
+        .btn-backup:hover { background: var(--accent-cyan); color: #000; }
+
+        /* Danger Zone */
+        .danger-card { border: 1px solid rgba(239, 68, 68, 0.3); }
+        .danger-card .card-icon { color: var(--accent-danger); background: rgba(239, 68, 68, 0.1); }
+        .btn-danger {
+            background: rgba(239, 68, 68, 0.1); border: 1px solid var(--accent-danger); color: var(--accent-danger);
+            padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 0.85rem;
+        }
+        .btn-danger:hover { background: var(--accent-danger); color: white; }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed; bottom: 30px; right: 30px;
+            background: #1e293b; border-left: 4px solid var(--accent-success);
+            padding: 15px 25px; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            display: flex; align-items: center; gap: 15px;
+            transform: translateY(100px); opacity: 0; transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+        .toast.show { transform: translateY(0); opacity: 1; }
+
+    </style>
+</head>
+<body>
+
+    <nav class="sidebar">
+        <div class="logo"><i class="fa-solid fa-cogs"></i> SYS_CONFIG</div>
+        <a href="/admin_dashboard" class="nav-item"><i class="fa-solid fa-gauge-high"></i> Dashboard</a>
+        <a href="/admin/doctors" class="nav-item"><i class="fa-solid fa-user-doctor"></i> Manage Doctors</a>
+        <a href="/admin/patients" class="nav-item"><i class="fa-solid fa-hospital-user"></i> Manage Patients</a>
+        <a href="/admin/devices" class="nav-item"><i class="fa-solid fa-microchip"></i> Manage Devices</a>
+        <a href="/admin/health_data" class="nav-item"><i class="fa-solid fa-database"></i> Health Data</a>
+        <a href="/admin/ai_suggestions" class="nav-item"><i class="fa-solid fa-robot"></i> AI Suggestions</a>
+        <a href="/admin/reports" class="nav-item"><i class="fa-solid fa-chart-line"></i> Reports</a>
+        <a href="/admin/settings" class="nav-item active"><i class="fa-solid fa-sliders"></i> Settings</a>
+        <a href="/logout" class="nav-item" style="color: #ef4444; margin-top: auto;"><i class="fa-solid fa-power-off"></i> Logout</a>
+    </nav>
+
+    <div class="main-content">
+        
+        <form method="POST" id="settingsForm">
+            <div class="toolbar">
+                <div class="page-title">
+                    <h2>Platform Configuration</h2>
+                    <p>Manage core system parameters and preferences.</p>
+                </div>
+                <button type="submit" class="btn-save">
+                    <i class="fa-solid fa-floppy-disk"></i> Save Changes
+                </button>
+            </div>
+
+            <div class="settings-container">
+                
+                <div class="set-card">
+                    <div class="card-header">
+                        <div class="card-icon"><i class="fa-solid fa-globe"></i></div>
+                        <div class="card-title">
+                            <h3>General Settings</h3>
+                            <p>Basic site information and localization.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">System Name</label>
+                        <input type="text" name="site_name" class="input-tech" value="{{ site_name }}">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Admin Email</label>
+                        <input type="email" class="input-tech" value="admin@healthcheck.ai" readonly>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Timezone</label>
+                        <select class="input-tech">
+                            <option>(UTC+05:30) Kolkata, India</option>
+                            <option>(UTC-05:00) New York, USA</option>
+                            <option>(UTC+00:00) London, UK</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="set-card">
+                    <div class="card-header">
+                        <div class="card-icon"><i class="fa-solid fa-shield-halved"></i></div>
+                        <div class="card-title">
+                            <h3>Security & Access</h3>
+                            <p>Control user access and authentication protocols.</p>
+                        </div>
+                    </div>
+
+                    <div class="toggle-row">
+                        <div>
+                            <div style="font-weight: 500">Maintenance Mode</div>
+                            <div style="font-size: 0.8rem; color: var(--text-muted)">Close site for non-admins</div>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="toggle-row">
+                        <div>
+                            <div style="font-weight: 500">Force 2FA</div>
+                            <div style="font-size: 0.8rem; color: var(--text-muted)">Require Two-Factor for Doctors</div>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="toggle-row">
+                        <div>
+                            <div style="font-weight: 500">Allow Registration</div>
+                            <div style="font-size: 0.8rem; color: var(--text-muted)">New patient sign-ups</div>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="set-card">
+                    <div class="card-header">
+                        <div class="card-icon"><i class="fa-solid fa-database"></i></div>
+                        <div class="card-title">
+                            <h3>Database & Storage</h3>
+                            <p>Manage backups and storage capacity.</p>
+                        </div>
+                    </div>
+
+                    <div class="db-stat">
+                        <span>Storage Used</span>
+                        <span>45GB / 100GB</span>
+                    </div>
+                    <div class="progress-bg">
+                        <div class="progress-fill"></div>
+                    </div>
+
+                    <div style="background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                        <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 5px;">Last Backup</div>
+                        <div style="font-family: var(--font-tech); color: var(--accent-success);">Dec 19, 2025 • 03:00 AM</div>
+                    </div>
+
+                    <button type="button" class="btn-backup" id="backupBtn" onclick="runBackup()">
+                        <i class="fa-solid fa-cloud-arrow-down"></i> Create New Backup
+                    </button>
+                </div>
+
+                <div class="set-card danger-card">
+                    <div class="card-header">
+                        <div class="card-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                        <div class="card-title">
+                            <h3 style="color: var(--accent-danger)">Danger Zone</h3>
+                            <p>Irreversible system actions.</p>
+                        </div>
+                    </div>
+
+                    <div class="toggle-row">
+                        <div>
+                            <div style="font-weight: 500">Purge System Logs</div>
+                            <div style="font-size: 0.8rem; color: var(--text-muted)">Deletes all activity history.</div>
+                        </div>
+                        <button type="button" class="btn-danger">Purge</button>
+                    </div>
+
+                    <div class="toggle-row">
+                        <div>
+                            <div style="font-weight: 500">Factory Reset</div>
+                            <div style="font-size: 0.8rem; color: var(--text-muted)">Wipe database (Dev Only).</div>
+                        </div>
+                        <button type="button" class="btn-danger">Reset</button>
+                    </div>
+                </div>
+
+            </div>
+        </form>
+    </div>
+
+    <div class="toast" id="toast">
+        <i class="fa-solid fa-circle-check" style="color: var(--accent-success); font-size: 1.5rem;"></i>
+        <div>
+            <div style="font-weight: 600;">Success</div>
+            <div style="font-size: 0.85rem; color: var(--text-muted);">Settings updated successfully.</div>
+        </div>
+    </div>
+
+    <script>
+        // UI INTERACTION SCRIPTS
+
+        // 1. Backup Simulation
+        function runBackup() {
+            const btn = document.getElementById('backupBtn');
+            const originalText = btn.innerHTML;
+            
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processing...';
+            btn.style.opacity = '0.7';
+            btn.style.cursor = 'not-allowed';
+
+            setTimeout(() => {
+                btn.innerHTML = '<i class="fa-solid fa-check"></i> Backup Complete';
+                btn.style.background = 'var(--accent-success)';
+                btn.style.color = '#fff';
+                btn.style.borderColor = 'var(--accent-success)';
+                
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.removeAttribute('style'); // Reset styles
+                }, 2000);
+            }, 2500);
+        }
+
+        // Show toast if redirected after post (simple way for this demo)
+        if (window.location.search.includes('success')) {
+             const toast = document.getElementById('toast');
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,35 @@
+{% extends 'doctor_layout.html' %}
+{% block doctor_content %}
+<h4 class="fw-bold text-primary mb-3">My Patients</h4>
+<div class="card">
+  <div class="card-body">
+    <h5 class="card-title">Assigned Patients</h5>
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Age</th>
+          <th>Gender</th>
+          <th>Device ID</th>
+          <th>Device Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for patient in patients_list %}
+        <tr>
+          <td>{{ patient[1] }}</td>
+          <td>{{ patient[2] if patient[2] else 'N/A' }}</td>
+          <td>{{ patient[3] if patient[3] else 'N/A' }}</td>
+          <td>{{ patient[4] if patient[4] else 'N/A' }}</td>
+          <td>{{ patient[5] if patient[5] else 'N/A' }}</td>
+          <td>
+            <a href="{{ url_for('patient_health_data', patient_id=patient[0]) }}" class="btn btn-sm btn-info">View Health Data</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

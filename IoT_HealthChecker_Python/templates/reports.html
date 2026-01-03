@@ -1,0 +1,54 @@
+{% extends 'admin_layout.html' %}
+{% block admin_content %}
+<h4 class="fw-bold text-primary mb-3">Reports & Analytics</h4>
+<div class="row">
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">Patients per Doctor</h5>
+        <canvas id="patientsPerDoctorChart"></canvas>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">Health Records per Patient</h5>
+        <canvas id="recordsPerPatientChart"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Patients per Doctor Chart
+  const patientsPerDoctorCtx = document.getElementById('patientsPerDoctorChart').getContext('2d');
+  const patientsPerDoctorChart = new Chart(patientsPerDoctorCtx, {
+    type: 'bar',
+    data: {
+      labels: [{% for item in patients_per_doctor %}"{{ item[0] }}",{% endfor %}],
+      datasets: [{
+        label: 'Number of Patients',
+        data: [{% for item in patients_per_doctor %}{{ item[1] }},{% endfor %}],
+        backgroundColor: '#0D6EFD'
+      }]
+    }
+  });
+
+  // Records per Patient Chart
+  const recordsPerPatientCtx = document.getElementById('recordsPerPatientChart').getContext('2d');
+  const recordsPerPatientChart = new Chart(recordsPerPatientCtx, {
+    type: 'pie',
+    data: {
+      labels: [{% for item in records_per_patient %}"{{ item[0] }}",{% endfor %}],
+      datasets: [{
+        label: 'Number of Records',
+        data: [{% for item in records_per_patient %}{{ item[1] }},{% endfor %}],
+        backgroundColor: [
+          '#0D6EFD', '#6C757D', '#198754', '#DC3545', '#FFC107', '#0DCAF0', '#212529'
+        ]
+      }]
+    }
+  });
+</script>
+{% endblock %}

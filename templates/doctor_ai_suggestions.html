@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Intelligence | Doctor Portal</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            /* Theme Variables */
+            --bg-dark: #0f172a;
+            --bg-panel: #1e293b;
+            --primary: #3b82f6;
+            --accent-purple: #8b5cf6; /* AI Color */
+            --accent-alert: #ef4444;
+            --accent-warning: #f59e0b;
+            --accent-info: #0ea5e9;
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            --border: rgba(255,255,255,0.08);
+            --font-ui: 'Inter', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: var(--font-ui);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* --- SIDEBAR --- */
+        .sidebar {
+            width: 260px;
+            background: var(--bg-panel);
+            border-right: 1px solid var(--border);
+            display: flex; flex-direction: column;
+            padding: 20px;
+        }
+
+        .brand { font-size: 1.2rem; font-weight: 700; color: var(--primary); display: flex; align-items: center; gap: 10px; margin-bottom: 40px; }
+        .nav-menu { list-style: none; display: flex; flex-direction: column; gap: 5px; }
+        .nav-item a { text-decoration: none; color: var(--text-muted); padding: 12px 15px; border-radius: 8px; display: flex; align-items: center; gap: 12px; font-size: 0.9rem; font-weight: 500; transition: 0.2s; }
+        .nav-item a:hover, .nav-item a.active { background: rgba(59, 130, 246, 0.1); color: var(--primary); }
+
+        /* --- MAIN CONTENT --- */
+        .main-content {
+            flex: 1; display: flex; flex-direction: column; overflow-y: auto; padding: 30px;
+        }
+
+        .header-section {
+            display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 30px;
+        }
+        .header-content h1 { font-size: 1.5rem; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+        .header-content p { color: var(--text-muted); margin-top: 5px; font-size: 0.9rem; }
+        
+        .header-actions { display: flex; align-items: center; gap: 15px; }
+
+        .ai-status-pill {
+            background: rgba(139, 92, 246, 0.1); border: 1px solid var(--accent-purple);
+            color: var(--accent-purple); padding: 6px 12px; border-radius: 20px; font-size: 0.8rem;
+            display: flex; align-items: center; gap: 8px; font-weight: 500;
+        }
+        .pulse-dot { width: 8px; height: 8px; background: var(--accent-purple); border-radius: 50%; animation: pulse 2s infinite; }
+        
+        .btn-run-ai {
+            background: var(--accent-purple); color: white; border: none; padding: 10px 20px;
+            border-radius: 8px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px;
+            transition: 0.2s;
+        }
+        .btn-run-ai:hover { background: #7c3aed; transform: translateY(-2px); }
+
+        /* FILTER TABS */
+        .tabs { display: flex; gap: 10px; margin-bottom: 25px; border-bottom: 1px solid var(--border); padding-bottom: 15px; }
+        .tab {
+            background: transparent; border: none; color: var(--text-muted); padding: 8px 16px;
+            cursor: pointer; font-size: 0.9rem; border-radius: 6px; transition: 0.2s;
+        }
+        .tab:hover { background: rgba(255,255,255,0.05); color: white; }
+        .tab.active { background: var(--accent-purple); color: white; }
+
+        /* SUGGESTION STREAM */
+        .suggestion-stream {
+            display: flex; flex-direction: column; gap: 20px;
+        }
+
+        /* INSIGHT CARD */
+        .insight-card {
+            background: var(--bg-panel); border: 1px solid var(--border); border-radius: 12px;
+            padding: 25px; position: relative; overflow: hidden;
+            display: grid; grid-template-columns: 250px 1fr 200px; gap: 20px;
+            transition: transform 0.2s;
+        }
+        .insight-card:hover { transform: translateY(-3px); border-color: rgba(255,255,255,0.1); }
+
+        /* Left Side: Patient Info */
+        .patient-meta {
+            border-right: 1px solid var(--border); padding-right: 20px;
+            display: flex; flex-direction: column; justify-content: center;
+        }
+        .p-name { font-weight: 700; font-size: 1.1rem; margin-bottom: 4px; }
+        .p-id { color: var(--text-muted); font-size: 0.85rem; font-family: var(--font-mono); }
+        .p-room { 
+            margin-top: 10px; display: inline-block; background: #0f172a; 
+            padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; color: var(--text-muted); width: fit-content;
+        }
+
+        /* Middle: AI Analysis */
+        .analysis-content { display: flex; flex-direction: column; justify-content: center; }
+        
+        .severity-badge {
+            display: inline-flex; align-items: center; gap: 6px;
+            font-size: 0.75rem; text-transform: uppercase; font-weight: 700; margin-bottom: 10px;
+            padding: 4px 10px; border-radius: 4px; width: fit-content;
+        }
+        .sev-crit { background: rgba(239, 68, 68, 0.15); color: var(--accent-alert); border: 1px solid rgba(239, 68, 68, 0.2); }
+        .sev-warn { background: rgba(245, 158, 11, 0.15); color: var(--accent-warning); border: 1px solid rgba(245, 158, 11, 0.2); }
+        .sev-stable { background: rgba(16, 185, 129, 0.15); color: var(--accent-success); border: 1px solid rgba(16, 185, 129, 0.2); }
+        
+        .ai-text { font-size: 0.95rem; line-height: 1.5; color: #e2e8f0; margin-bottom: 15px; }
+        .highlight { color: var(--accent-purple); font-weight: 600; }
+
+        .confidence-wrapper { display: flex; align-items: center; gap: 10px; font-size: 0.8rem; color: var(--text-muted); }
+        .conf-bar-bg { width: 100px; height: 6px; background: #333; border-radius: 3px; }
+        .conf-bar-fill { height: 100%; background: var(--accent-purple); border-radius: 3px; }
+
+        /* Right Side: Actions */
+        .action-panel {
+            display: flex; flex-direction: column; justify-content: center; gap: 10px;
+        }
+        .btn-act {
+            padding: 10px; border-radius: 6px; border: 1px solid var(--border); background: transparent;
+            color: var(--text-muted); cursor: pointer; font-size: 0.85rem; font-weight: 500;
+            display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s;
+            text-decoration: none; width: 100%;
+        }
+        .btn-act:hover { color: white; border-color: white; }
+        
+        .btn-primary { background: var(--primary); color: white; border: none; }
+        .btn-primary:hover { background: #2563eb; }
+
+        .feedback-form { width: 100%; }
+        .feedback-input { 
+            width: 100%; background: #0f172a; border: 1px solid var(--border); color: white;
+            padding: 8px; border-radius: 6px; margin-bottom: 5px; outline: none; font-size: 0.8rem;
+        }
+
+        /* MODAL */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+        .modal-box {
+            background: var(--bg-panel); border: 1px solid var(--border); width: 400px; padding: 30px;
+            border-radius: 16px; box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .modal-close { background: transparent; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.2rem; }
+        
+        .modal-select {
+            width: 100%; padding: 12px; background: #0f172a; border: 1px solid var(--border);
+            color: white; border-radius: 8px; margin-bottom: 20px; outline: none;
+        }
+
+        @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
+        
+        /* Responsive */
+        @media (max-width: 1000px) {
+            .insight-card { grid-template-columns: 1fr; gap: 15px; }
+            .patient-meta { border-right: none; border-bottom: 1px solid var(--border); padding-bottom: 15px; padding-right: 0; flex-direction: row; justify-content: space-between; align-items: center; }
+            .action-panel { flex-direction: row; }
+        }
+
+    </style>
+</head>
+<body>
+
+    <nav class="sidebar">
+        <div class="brand"><i class="fa-solid fa-user-doctor"></i> DocPortal</div>
+        <ul class="nav-menu">
+            <li class="nav-item"><a href="{{ url_for('doctor_dashboard') }}"><i class="fa-solid fa-table-columns"></i> Dashboard</a></li>
+            <li class="nav-item"><a href="{{ url_for('my_patients') }}"><i class="fa-solid fa-hospital-user"></i> My Patients</a></li>
+            <li class="nav-item"><a href="{{ url_for('assign_patients_page') }}"><i class="fa-solid fa-user-plus"></i> Assign Patients</a></li>
+            <li class="nav-item"><a href="{{ url_for('doctor_ai_suggestions') }}" class="active"><i class="fa-solid fa-brain"></i> AI Suggestions</a></li>
+            <li class="nav-item"><a href="{{ url_for('doctor_reports') }}"><i class="fa-solid fa-file-medical"></i> Reports</a></li>
+            <li class="nav-item" style="margin-top: 20px;"><a href="{{ url_for('logout') }}"><i class="fa-solid fa-arrow-right-from-bracket"></i> Logout</a></li>
+        </ul>
+    </nav>
+
+    <main class="main-content">
+        
+        <div class="header-section">
+            <div class="header-content">
+                <h1><i class="fa-solid fa-wand-magic-sparkles" style="color: var(--accent-purple)"></i> Health Intelligence</h1>
+                <p>Real-time AI analysis of patient vitals and anomaly detection.</p>
+            </div>
+            <div class="header-actions">
+                <div class="ai-status-pill">
+                    <div class="pulse-dot"></div> Model v4.2 Online
+                </div>
+                <button class="btn-run-ai" onclick="openModal()">
+                    <i class="fa-solid fa-microchip"></i> Run Analysis
+                </button>
+            </div>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="filterStatus('all')">All Insights</button>
+            <button class="tab" onclick="filterStatus('Pending')">Pending</button>
+            <button class="tab" onclick="filterStatus('Approved')">Approved</button>
+            <button class="tab" onclick="filterStatus('Rejected')">Rejected</button>
+        </div>
+
+        <div class="suggestion-stream" id="stream">
+            {% for s in suggestions_list %}
+            <div class="insight-card" data-status="{{ s[6] }}">
+                <div class="patient-meta">
+                    <div>
+                        <div class="p-name">{{ s[1] }}</div>
+                        <div class="p-id">ID: P-{{ s[7] }}</div>
+                    </div>
+                    <div class="p-room"><i class="fa-solid fa-bed"></i> {{ s[8] if s[8] else 'N/A' }}</div>
+                </div>
+
+                <div class="analysis-content">
+                    {% if 'Critical' in s[2] or 'Tachycardia' in s[2] or 'danger' in s[2].lower() or 'Elevated' in s[2] %}
+                    <div class="severity-badge sev-crit">
+                        <i class="fa-solid fa-circle-exclamation"></i> Critical Anomaly
+                    </div>
+                    {% elif 'Warning' in s[2] or 'Potential' in s[2] or 'caution' in s[2].lower() %}
+                    <div class="severity-badge sev-warn">
+                        <i class="fa-solid fa-triangle-exclamation"></i> Potential Issue
+                    </div>
+                    {% else %}
+                    <div class="severity-badge sev-stable">
+                        <i class="fa-solid fa-check-circle"></i> Stable
+                    </div>
+                    {% endif %}
+
+                    <p class="ai-text">
+                        {{ s[2] | safe }}
+                    </p>
+                    
+                    <div class="confidence-wrapper">
+                        <span>AI Confidence: 94%</span>
+                        <div class="conf-bar-bg"><div class="conf-bar-fill" style="width: 94%;"></div></div>
+                        <span style="margin-left: 15px; font-size: 0.75rem;"><i class="fa-regular fa-clock"></i> {{ s[4].strftime('%b %d, %H:%M') if s[4].strftime else s[4] }}</span>
+                    </div>
+                    {% if s[5] %}
+                    <div style="margin-top: 10px; font-size: 0.85rem; color: var(--accent-purple);">
+                        <strong>Feedback:</strong> {{ s[5] }}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="action-panel">
+                    {% if s[6] == 'Pending' %}
+                    <form action="{{ url_for('approve_suggestion', suggestion_id=s[0]) }}" method="POST" class="feedback-form">
+                        <input type="text" name="feedback" placeholder="Feedback..." class="feedback-input">
+                        <button type="submit" class="btn-act btn-primary"><i class="fa-solid fa-check"></i> Approve</button>
+                    </form>
+                    <form action="{{ url_for('reject_suggestion', suggestion_id=s[0]) }}" method="POST" class="feedback-form">
+                        <input type="text" name="feedback" placeholder="Reason..." class="feedback-input">
+                        <button type="submit" class="btn-act"><i class="fa-solid fa-xmark"></i> Dismiss</button>
+                    </form>
+                    {% else %}
+                    <div style="text-align: center; font-weight: 700; color: {{ '#10b981' if s[6] == 'Approved' else '#ef4444' }}; text-transform: uppercase; font-size: 0.8rem; margin-bottom: 10px;">
+                        {{ s[6] }}
+                    </div>
+                    {% endif %}
+                    <a href="{{ url_for('patient_health_data', patient_id=s[7]) }}" class="btn-act"><i class="fa-solid fa-chart-line"></i> View Chart</a>
+                </div>
+            </div>
+            {% else %}
+            <div style="text-align: center; padding: 50px; color: var(--text-muted); border: 2px dashed var(--border); border-radius: 12px;">
+                <i class="fa-solid fa-robot" style="font-size: 3rem; margin-bottom: 15px; opacity: 0.3;"></i>
+                <p>No health intelligence insights found.</p>
+                <button onclick="openModal()" style="background:transparent; color:var(--accent-purple); border:none; cursor:pointer; font-weight:600; margin-top:10px;">Run your first analysis</button>
+            </div>
+            {% endfor %}
+        </div>
+
+    </main>
+
+    <!-- ANALYSIS MODAL -->
+    <div class="modal-overlay" id="aiModal">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3>Run AI Analysis</h3>
+                <button class="modal-close" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form action="{{ url_for('generate_doctor_ai_suggestion') }}" method="POST">
+                <label style="display:block; margin-bottom:10px; color:var(--text-muted); font-size:0.9rem;">Select Patient to Analyze</label>
+                <select name="patient_id" class="modal-select" required>
+                    <option value="" disabled selected>-- Choose Patient --</option>
+                    {% for p in my_patients %}
+                    <option value="{{ p[0] }}">{{ p[1] }}</option>
+                    {% endfor %}
+                </select>
+                <button type="submit" class="btn-act btn-primary" style="width:100%">
+                    <i class="fa-solid fa-bolt"></i> Generate Insights
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function filterStatus(status) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+
+            const cards = document.querySelectorAll('.insight-card');
+            cards.forEach(c => {
+                if(status === 'all' || c.getAttribute('data-status') === status) {
+                    c.style.display = 'grid';
+                } else {
+                    c.style.display = 'none';
+                }
+            });
+        }
+
+        function openModal() {
+            document.getElementById('aiModal').style.display = 'flex';
+        }
+        function closeModal() {
+            document.getElementById('aiModal').style.display = 'none';
+        }
+        
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            if (event.target == document.getElementById('aiModal')) {
+                closeModal();
+            }
+        }
+    </script>
+
+</body>
+</html>

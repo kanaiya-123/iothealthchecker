@@ -1,0 +1,16 @@
+{% extends 'admin_layout.html' %}
+{% block admin_content %}
+<h4 class="fw-bold text-primary mb-3">Add New Device</h4>
+<div class="card">
+  <div class="card-body">
+    <form method="POST">
+      <div class="mb-3">
+        <label for="device_id" class="form-label">Device ID</label>
+        <input type="text" class="form-control" id="device_id" name="device_id" required>
+      </div>
+      <button type="submit" class="btn btn-primary">Add Device</button>
+      <a href="{{ url_for('manage_devices') }}" class="btn btn-secondary">Cancel</a>
+    </form>
+  </div>
+</div>
+{% endblock %}

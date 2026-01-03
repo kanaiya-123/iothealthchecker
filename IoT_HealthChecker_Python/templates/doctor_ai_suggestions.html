@@ -1,0 +1,66 @@
+{% extends 'doctor_layout.html' %}
+{% block doctor_content %}
+<h4 class="fw-bold text-primary mb-3">AI Health Suggestions for My Patients</h4>
+<div class="card">
+  <div class="card-body">
+    <h5 class="card-title">All AI Suggestions</h5>
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Patient</th>
+          <th>Suggestion</th>
+          <th>Admin Status</th>
+          <th>Doctor Status</th>
+          <th>Doctor Feedback</th>
+          <th>Timestamp</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for suggestion in suggestions_list %}
+        <tr>
+          <td>{{ suggestion[0] }}</td>
+          <td>{{ suggestion[1] }}</td>
+          <td>{{ suggestion[2] }}</td>
+          <td>
+            {% if suggestion[3] %}
+            <span class="badge bg-success">Verified</span>
+            {% else %}
+            <span class="badge bg-warning">Not Verified</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if suggestion[6] == 'Approved' %}
+            <span class="badge bg-success">{{ suggestion[6] }}</span>
+            {% elif suggestion[6] == 'Rejected' %}
+            <span class="badge bg-danger">{{ suggestion[6] }}</span>
+            {% else %}
+            <span class="badge bg-info">{{ suggestion[6] }}</span>
+            {% endif %}
+          </td>
+          <td>{{ suggestion[5] if suggestion[5] else 'N/A' }}</td>
+          <td>{{ suggestion[4] }}</td>
+          <td>
+            <div class="d-flex">
+              <form action="{{ url_for('approve_suggestion', suggestion_id=suggestion[0]) }}" method="POST" class="me-1">
+                <input type="text" name="feedback" placeholder="Optional feedback" class="form-control form-control-sm mb-1">
+                <button type="submit" class="btn btn-sm btn-success w-100">Approve</button>
+              </form>
+              <form action="{{ url_for('reject_suggestion', suggestion_id=suggestion[0]) }}" method="POST" class="me-1">
+                <input type="text" name="feedback" placeholder="Optional feedback" class="form-control form-control-sm mb-1">
+                <button type="submit" class="btn btn-sm btn-danger w-100">Reject</button>
+              </form>
+              <form action="{{ url_for('comment_suggestion', suggestion_id=suggestion[0]) }}" method="POST">
+                <input type="text" name="feedback" placeholder="Your comment" class="form-control form-control-sm mb-1" required>
+                <button type="submit" class="btn btn-sm btn-info w-100">Comment</button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

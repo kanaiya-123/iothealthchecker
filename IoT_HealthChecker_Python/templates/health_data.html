@@ -1,0 +1,53 @@
+{% extends 'admin_layout.html' %}
+{% block admin_content %}
+<h4 class="fw-bold text-primary mb-3">Monitor Health Data</h4>
+<div class="card">
+  <div class="card-body">
+    <div class="d-flex justify-content-between mb-3">
+      <h5 class="card-title">All Health Records</h5>
+      <div>
+        <a href="{{ url_for('export_health_data_csv') }}" class="btn btn-success">Export as CSV</a>
+        <a href="{{ url_for('export_health_data_pdf') }}" class="btn btn-danger">Export as PDF</a>
+      </div>
+    </div>
+    <form method="GET" class="row g-3 mb-3">
+      <div class="col-md-3">
+        <input type="text" name="patient" class="form-control" placeholder="Filter by Patient" value="{{ patient_filter or '' }}">
+      </div>
+      <div class="col-md-3">
+        <input type="text" name="doctor" class="form-control" placeholder="Filter by Doctor" value="{{ doctor_filter or '' }}">
+      </div>
+      <div class="col-md-3">
+        <input type="date" name="date" class="form-control" value="{{ date_filter or '' }}">
+      </div>
+      <div class="col-md-3">
+        <button type="submit" class="btn btn-primary">Filter</button>
+      </div>
+    </form>
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>Patient</th>
+          <th>Temperature</th>
+          <th>Heart Rate</th>
+          <th>SpO2</th>
+          <th>Blood Pressure</th>
+          <th>Timestamp</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for data in health_data_list %}
+        <tr>
+          <td>{{ data[0] }}</td>
+          <td>{{ data[1] }}</td>
+          <td>{{ data[2] }}</td>
+          <td>{{ data[3] }}</td>
+          <td>{{ data[4] }}</td>
+          <td>{{ data[5] }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

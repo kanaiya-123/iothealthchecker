@@ -1,0 +1,30 @@
+{% extends 'doctor_layout.html' %}
+{% block doctor_content %}
+<h4 class="fw-bold text-primary mb-3">Generate / Download Reports</h4>
+<div class="card">
+  <div class="card-body">
+    <h5 class="card-title">Generate Patient Report</h5>
+    <form method="GET" action="{{ url_for('generate_doctor_report_pdf') }}" class="mb-3">
+      <div class="mb-3">
+        <label for="patient_id" class="form-label">Select Patient</label>
+        <select class="form-select" id="patient_id" name="patient_id" required>
+          <option value="">-- Select a Patient --</option>
+          {% for patient in patients %}
+          <option value="{{ patient[0] }}">{{ patient[1] }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="mb-3">
+        <label for="start_date" class="form-label">Start Date</label>
+        <input type="date" class="form-control" id="start_date" name="start_date">
+      </div>
+      <div class="mb-3">
+        <label for="end_date" class="form-label">End Date</label>
+        <input type="date" class="form-control" id="end_date" name="end_date">
+      </div>
+      <button type="submit" class="btn btn-danger me-2">Generate PDF Report</button>
+      <a href="{{ url_for('generate_doctor_report_csv') }}?patient_id={{ request.args.get('patient_id', '') }}&start_date={{ request.args.get('start_date', '') }}&end_date={{ request.args.get('end_date', '') }}" class="btn btn-success">Generate CSV Report</a>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,22 @@
+{% extends 'layout.html' %}
+{% block content %}
+<h4 class="fw-bold text-primary">Welcome, {{ user.name }}</h4>
+<div class="row g-3">
+  <div class="col-md-3"><div class="card p-3 text-center shadow-sm"><h6>Heart Rate</h6><h3>{{ latest.heart_rate }} bpm</h3></div></div>
+  <div class="col-md-3"><div class="card p-3 text-center shadow-sm"><h6>SpO₂</h6><h3>{{ latest.spo2 }}%</h3></div></div>
+  <div class="col-md-3"><div class="card p-3 text-center shadow-sm"><h6>Temperature</h6><h3>{{ latest.temperature }} °C</h3></div></div>
+</div>
+
+<div class="mt-4">
+  <canvas id="patientChart" height="150"></canvas>
+</div>
+
+<div class="card mt-4 p-3 shadow">
+  <h5 class="text-secondary">AI Health Tip</h5>
+  <p>{{ suggestion_text }}</p>
+</div>
+
+<a href="/download_report" class="btn btn-success mt-3">📄 Download Health Report</a>
+
+<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+{% endblock %}

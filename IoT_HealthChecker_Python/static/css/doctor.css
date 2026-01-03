@@ -1,0 +1,68 @@
+/* Doctor Layout Styles */
+body {
+    display: flex;
+    min-height: 100vh;
+    flex-direction: column;
+}
+
+.main-wrapper {
+    display: flex;
+    flex: 1;
+}
+
+#sidebar {
+    width: 250px;
+    background: #0D6EFD; /* Primary blue */
+    color: white;
+    transition: all 0.3s;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+}
+
+#sidebar .sidebar-header {
+    padding: 20px;
+    background: #0B5ED7; /* Darker blue */
+    text-align: center;
+    font-weight: bold;
+    border-bottom: 1px solid #3D8BFD;
+}
+
+#sidebar ul.components {
+    padding: 20px 0;
+    border-bottom: 1px solid #3D8BFD;
+}
+
+#sidebar ul p {
+    color: white;
+    padding: 10px;
+}
+
+#sidebar ul li a {
+    padding: 10px 20px;
+    font-size: 1.1em;
+    display: block;
+    color: #B0C4DE; /* Light steel blue */
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+#sidebar ul li a:hover {
+    color: #FFF;
+    background: #3D8BFD; /* Lighter blue */
+}
+
+#sidebar ul li.active > a, a[aria-expanded="true"] {
+    color: #FFF;
+    background: #0B5ED7; /* Darker blue */
+}
+
+#content {
+    width: 100%;
+    padding: 20px;
+    min-height: 100vh;
+    transition: all 0.3s;
+    margin-left: 250px;
+}

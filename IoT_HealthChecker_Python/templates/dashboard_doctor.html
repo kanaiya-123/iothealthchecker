@@ -1,0 +1,73 @@
+{% extends 'doctor_layout.html' %}
+{% block doctor_content %}
+<h4 class="fw-bold text-primary mb-3">Doctor Dashboard</h4>
+
+<div class="row g-3">
+  <div class="col-md-3">
+    <div class="card p-3 text-center shadow-sm">
+      <h5>Assigned Patients</h5>
+      <h2>{{ total_assigned_patients }}</h2>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card p-3 text-center shadow-sm">
+      <h5>Abnormal Vitals Alerts</h5>
+      <h2>{{ abnormal_vitals_alerts }}</h2>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card p-3 text-center shadow-sm">
+      <h5>Latest Reports</h5>
+      <h2>{{ latest_reports }}</h2>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card p-3 text-center shadow-sm">
+      <h5>AI Suggestions</h5>
+      <h2>{{ ai_suggestions_count }}</h2>
+    </div>
+  </div>
+</div>
+
+<div class="row mt-4">
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">Recent Health Data</h5>
+        <canvas id="doctorHealthChart" height="150"></canvas>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">AI Health Suggestions Overview</h5>
+        <div class="list-group" style="max-height: 200px; overflow-y: auto;">
+          {% for s in suggestions %}
+            <div class="list-group-item">
+              <strong>Patient: {{ s[0] }}</strong><br>
+              {{ s[1] }} <br>
+              <small class="text-muted">{{ s[2] }}</small>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row mt-4">
+  <div class="col-md-12">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">Quick Actions</h5>
+        <a href="{{ url_for('my_patients') }}" class="btn btn-primary me-2">View My Patients</a>
+        <a href="#" class="btn btn-secondary me-2">View Health History</a>
+        <a href="#" class="btn btn-success">Add Health Info</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/doctor_charts.js') }}"></script>
+{% endblock %}

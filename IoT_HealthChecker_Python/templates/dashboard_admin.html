@@ -1,0 +1,105 @@
+{% extends 'admin_layout.html' %}
+{% block admin_content %}
+<h4 class="fw-bold text-primary mb-3">Dashboard Overview</h4>
+<div class="row g-3">
+  <div class="col-md-3">
+    <div class="card p-3 text-center shadow-sm">
+      <h5>Total Doctors</h5>
+      <h2>{{ total_doctors }}</h2>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card p-3 text-center shadow-sm">
+      <h5>Total Patients</h5>
+      <h2>{{ total_patients }}</h2>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card p-3 text-center shadow-sm">
+      <h5>Total Devices Connected</h5>
+      <h2>{{ total_devices }}</h2>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card p-3 text-center shadow-sm">
+      <h5>Active Health Records</h5>
+      <h2>{{ total_devices }}</h2>
+    </div>
+  </div>
+</div>
+
+<div class="row mt-4">
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">Real-time Data Updates</h5>
+        <canvas id="realtimeChart"></canvas>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">Device Status Reports</h5>
+        <canvas id="deviceStatusChart"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row mt-4">
+  <div class="col-md-12">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">Patient Activity Chart</h5>
+        <canvas id="patientActivityChart"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Real-time Data Chart
+  const realtimeCtx = document.getElementById('realtimeChart').getContext('2d');
+  const realtimeChart = new Chart(realtimeCtx, {
+    type: 'line',
+    data: {
+      labels: ['Now', '1s ago', '2s ago', '3s ago', '4s ago', '5s ago'],
+      datasets: [{
+        label: 'Live Data',
+        data: [12, 19, 3, 5, 2, 3],
+        borderColor: 'rgb(75, 192, 192)',
+        tension: 0.1
+      }]
+    }
+  });
+
+  // Device Status Chart
+  const deviceStatusCtx = document.getElementById('deviceStatusChart').getContext('2d');
+  const deviceStatusChart = new Chart(deviceStatusCtx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Active', 'Offline', 'Maintenance'],
+      datasets: [{
+        label: 'Device Status',
+        data: [10, 2, 1],
+        backgroundColor: ['#28A745', '#DC3545', '#FFC107']
+      }]
+    }
+  });
+
+  // Patient Activity Chart
+  const patientActivityCtx = document.getElementById('patientActivityChart').getContext('2d');
+  const patientActivityChart = new Chart(patientActivityCtx, {
+    type: 'bar',
+    data: {
+      labels: ['Patient A', 'Patient B', 'Patient C', 'Patient D'],
+      datasets: [{
+        label: 'Data Uploads',
+        data: [50, 75, 60, 80],
+        backgroundColor: '#0D6EFD'
+      }]
+    }
+  });
+</script>
+{% endblock %}

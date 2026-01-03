@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctor Dashboard | IoT Health</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        :root {
+            --bg-dark: #0f172a;       /* Deep Blue/Slate */
+            --bg-panel: #1e293b;      /* Lighter Slate */
+            --primary: #3b82f6;       /* Medical Blue */
+            --accent-alert: #ef4444;  /* Red for abnormal */
+            --accent-success: #10b981;/* Green for stable */
+            --accent-purple: #8b5cf6; /* AI/Suggestions */
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            --border: rgba(255,255,255,0.08);
+            --font-ui: 'Inter', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: var(--font-ui);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* --- SIDEBAR --- */
+        .sidebar {
+            width: 260px;
+            background: var(--bg-panel);
+            border-right: 1px solid var(--border);
+            display: flex; flex-direction: column;
+            padding: 20px;
+        }
+
+        .brand {
+            font-size: 1.2rem; font-weight: 700; color: var(--primary);
+            display: flex; align-items: center; gap: 10px; margin-bottom: 40px;
+        }
+
+        .nav-menu { list-style: none; display: flex; flex-direction: column; gap: 5px; }
+        
+        .nav-item a {
+            text-decoration: none; color: var(--text-muted); padding: 12px 15px;
+            border-radius: 8px; display: flex; align-items: center; gap: 12px;
+            font-size: 0.9rem; font-weight: 500; transition: all 0.2s;
+        }
+        
+        .nav-item a:hover, .nav-item a.active {
+            background: rgba(59, 130, 246, 0.1); color: var(--primary);
+        }
+        
+        .nav-item a.danger-link:hover {
+            background: rgba(239, 68, 68, 0.1); color: var(--accent-alert);
+        }
+
+        /* User Profile Snippet in Sidebar */
+        .doc-profile {
+            margin-top: auto; padding: 15px; background: rgba(0,0,0,0.2);
+            border-radius: 12px; display: flex; align-items: center; gap: 10px;
+        }
+        .doc-avatar { width: 35px; height: 35px; border-radius: 50%; background: var(--primary); display: flex; align-items: center; justify-content: center; font-weight: 700; color: white; }
+
+        /* --- MAIN CONTENT --- */
+        .main-content {
+            flex: 1; display: flex; flex-direction: column; overflow-y: auto; padding: 30px;
+        }
+
+        .header {
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;
+        }
+        .header h1 { font-size: 1.5rem; font-weight: 700; }
+        .date-badge { background: var(--bg-panel); padding: 6px 12px; border-radius: 20px; font-size: 0.85rem; color: var(--text-muted); border: 1px solid var(--border); }
+
+        /* STATS CARDS */
+        .stats-grid {
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: var(--bg-panel); border: 1px solid var(--border);
+            border-radius: 16px; padding: 20px; position: relative; overflow: hidden;
+            display: flex; flex-direction: column; justify-content: space-between; height: 140px;
+        }
+
+        .stat-icon {
+            width: 40px; height: 40px; border-radius: 10px;
+            display: flex; align-items: center; justify-content: center; font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+        .s-blue { background: rgba(59, 130, 246, 0.1); color: var(--primary); }
+        .s-red { background: rgba(239, 68, 68, 0.1); color: var(--accent-alert); }
+        .s-purple { background: rgba(139, 92, 246, 0.1); color: var(--accent-purple); }
+        .s-green { background: rgba(16, 185, 129, 0.1); color: var(--accent-success); }
+
+        .stat-val { font-size: 2rem; font-weight: 700; line-height: 1; }
+        .stat-label { color: var(--text-muted); font-size: 0.9rem; margin-top: 5px; }
+
+        /* Pulse Animation for Alert Card */
+        .alert-card { border-color: rgba(239, 68, 68, 0.3); }
+        .alert-pulse {
+            position: absolute; right: 20px; top: 20px; width: 10px; height: 10px;
+            background: var(--accent-alert); border-radius: 50%;
+            box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+            animation: pulse-red 2s infinite;
+        }
+        @keyframes pulse-red {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+
+        /* LOWER SECTION GRID */
+        .dashboard-lower {
+            display: grid; grid-template-columns: 2fr 1fr; gap: 20px; height: 400px;
+        }
+
+        /* CHART SECTION */
+        .chart-panel {
+            background: var(--bg-panel); border: 1px solid var(--border);
+            border-radius: 16px; padding: 20px; display: flex; flex-direction: column;
+        }
+        .panel-header {
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;
+        }
+        .chart-container { flex: 1; position: relative; width: 100%; }
+
+        /* AI SUGGESTIONS SECTION */
+        .ai-panel {
+            background: var(--bg-panel); border: 1px solid var(--border);
+            border-radius: 16px; padding: 20px; overflow-y: auto;
+        }
+        
+        .ai-tip {
+            background: rgba(139, 92, 246, 0.05); border-left: 3px solid var(--accent-purple);
+            padding: 15px; border-radius: 6px; margin-bottom: 15px;
+        }
+        .ai-tip h4 { font-size: 0.95rem; color: var(--text-main); margin-bottom: 5px; display: flex; justify-content: space-between; align-items: center; }
+        .ai-tip p { font-size: 0.85rem; color: var(--text-muted); line-height: 1.4; }
+        .ai-time { font-size: 0.75rem; color: var(--accent-purple); font-family: var(--font-mono); }
+
+    </style>
+</head>
+<body>
+
+    <nav class="sidebar">
+        <div class="brand">
+            <i class="fa-solid fa-user-doctor"></i> DocPortal
+        </div>
+
+        <ul class="nav-menu">
+            <li class="nav-item"><a href="/doctor_dashboard" class="active"><i class="fa-solid fa-table-columns"></i> Dashboard</a></li>
+            <li class="nav-item"><a href="/doctor/patients"><i class="fa-solid fa-hospital-user"></i> My Patients</a></li>
+            <li class="nav-item"><a href="/doctor/ai_suggestions"><i class="fa-solid fa-brain"></i> AI Suggestions</a></li>
+            <li class="nav-item"><a href="/doctor/reports"><i class="fa-solid fa-file-medical"></i> Reports</a></li>
+            <li class="nav-item"><a href="/doctor/profile"><i class="fa-solid fa-user-gear"></i> Profile</a></li>
+            <li class="nav-item" style="margin-top: 20px;"><a href="/logout" class="danger-link"><i class="fa-solid fa-arrow-right-from-bracket"></i> Logout</a></li>
+        </ul>
+
+        <div class="doc-profile">
+            <div class="doc-avatar">{{ session['name'][:2].upper() if session.get('name') else 'DR' }}</div>
+            <div>
+                <div style="font-size: 0.9rem; font-weight: 600;">{{ session['name'] }}</div>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">Medical Specialist</div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        
+        <div class="header">
+            <h1>Doctor Dashboard</h1>
+            <div class="date-badge" id="current-date"><i class="fa-regular fa-calendar"></i> Dec 20, 2025</div>
+        </div>
+
+        <section class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon s-blue"><i class="fa-solid fa-users"></i></div>
+                <div>
+                    <div class="stat-val">{{ total_assigned_patients }}</div>
+                    <div class="stat-label">Assigned Patients</div>
+                </div>
+            </div>
+
+            <div class="stat-card alert-card">
+                <div class="alert-pulse"></div>
+                <div class="stat-icon s-red"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                <div>
+                    <div class="stat-val" style="color: var(--accent-alert);">{{ abnormal_vitals_alerts }}</div>
+                    <div class="stat-label">Abnormal Alerts</div>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon s-green"><i class="fa-solid fa-file-contract"></i></div>
+                <div>
+                    <div class="stat-val">{{ latest_reports }}</div>
+                    <div class="stat-label">New Reports</div>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon s-purple"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+                <div>
+                    <div class="stat-val">{{ ai_suggestions_count }}</div>
+                    <div class="stat-label">AI Insights</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="dashboard-lower">
+            
+            <div class="chart-panel">
+                <div class="panel-header">
+                    <h3>Recent Health Data Trends</h3>
+                    <div style="font-size: 0.85rem; color: var(--text-muted);">Real-time Telemetry</div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="healthChart"></canvas>
+                </div>
+            </div>
+
+            <div class="ai-panel">
+                <div class="panel-header">
+                    <h3>AI Suggestions Overview</h3>
+                </div>
+                
+                {% for s in suggestions %}
+                <div class="ai-tip">
+                    <h4>{{ s[1][:25] }}... <span class="ai-time">{{ s[2].strftime('%H:%M') if s[2].strftime else s[2] }}</span></h4>
+                    <p>Patient <strong>{{ s[0] }}</strong>: {{ s[1] }}</p>
+                </div>
+                {% else %}
+                <p style="color: var(--text-muted); font-size: 0.9rem;">No recent suggestions.</p>
+                {% endfor %}
+            </div>
+
+        </section>
+
+    </main>
+
+    <script>
+        // Update Date
+        const options = { year: 'numeric', month: 'short', day: 'numeric' };
+        document.getElementById('current-date').innerHTML = `<i class="fa-regular fa-calendar"></i> ${new Date().toLocaleDateString('en-US', options)}`;
+
+        // --- Chart.js Configuration for Vitals Graph ---
+        const ctx = document.getElementById('healthChart').getContext('2d');
+        
+        fetch('/api/doctor/chart_data')
+            .then(response => response.json())
+            .then(data => {
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: data.labels,
+                        datasets: data.datasets.map(ds => {
+                            // Apply custom styling for the new theme
+                            const color = ds.label === 'Heart Rate' ? '#ef4444' : 
+                                          ds.label === 'SpO2' ? '#3b82f6' : '#8b5cf6';
+                            
+                            const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+                            gradient.addColorStop(0, color + '80'); // 50% opacity
+                            gradient.addColorStop(1, color + '00'); // 0% opacity
+
+                            return {
+                                ...ds,
+                                borderColor: color,
+                                backgroundColor: gradient,
+                                borderWidth: 2,
+                                tension: 0.4,
+                                fill: true,
+                                pointRadius: 2,
+                                pointHoverRadius: 5
+                            };
+                        })
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { 
+                                labels: { color: '#94a3b8', font: { family: 'Inter' } },
+                                position: 'top',
+                                align: 'end'
+                            },
+                            tooltip: {
+                                mode: 'index',
+                                intersect: false,
+                                backgroundColor: '#1e293b',
+                                titleColor: '#f1f5f9',
+                                bodyColor: '#94a3b8',
+                                borderColor: 'rgba(255,255,255,0.1)',
+                                borderWidth: 1
+                            }
+                        },
+                        scales: {
+                            y: {
+                                grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                                ticks: { color: '#94a3b8', font: { family: 'JetBrains Mono' } }
+                            },
+                            x: {
+                                grid: { display: false },
+                                ticks: { color: '#94a3b8', font: { family: 'JetBrains Mono' } }
+                            }
+                        }
+                    }
+                });
+            })
+            .catch(error => console.error('Error fetching chart data:', error));
+    </script>
+</body>
+</html>

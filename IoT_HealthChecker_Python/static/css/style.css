@@ -1,0 +1,34 @@
+body {
+    font-family: sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #F3F4F6;
+    color: #111827;
+}
+
+.bg-primary {
+    background-color: #1E3A8A !important;
+}
+
+.text-primary {
+    color: #1E3A8A !important;
+}
+
+.btn-primary {
+    background-color: #06B6D4;
+    border-color: #06B6D4;
+}
+
+.text-info {
+    color: #06B6D4 !important;
+}
+
+.text-warning {
+    color: #7C3AED !important;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .card h3 { font-size: 1.2rem; }
+  nav .navbar-brand { font-size: 1rem; }
+}

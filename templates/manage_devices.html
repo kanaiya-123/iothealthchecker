@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Devices | Admin Core</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            /* Theme Variables - Consistent with Admin Core */
+            --bg-dark: #0b0c15;
+            --bg-panel: #151621;
+            --accent-primary: #7c3aed;
+            --accent-cyan: #06b6d4;
+            --status-online: #10b981;
+            --status-offline: #64748b;
+            --status-error: #ef4444;
+            --text-main: #e2e8f0;
+            --text-muted: #64748b;
+            --border-light: rgba(255, 255, 255, 0.08);
+            --font-tech: 'JetBrains Mono', monospace;
+            --font-ui: 'Inter', sans-serif;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: var(--font-ui);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* --- SIDEBAR --- */
+        .sidebar {
+            width: 260px;
+            background: var(--bg-panel);
+            border-right: 1px solid var(--border-light);
+            padding: 25px;
+            display: flex; flex-direction: column;
+        }
+        .logo { color: var(--accent-cyan); font-family: var(--font-tech); font-weight: 700; margin-bottom: 40px; display: flex; align-items: center; gap: 10px; font-size: 1.2rem; }
+        .nav-item { padding: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 10px; margin-bottom: 5px; text-decoration: none; border-radius: 8px; transition: all 0.2s; font-size: 0.9rem; font-weight: 500;}
+        .nav-item:hover, .nav-item.active { background: rgba(16, 185, 129, 0.1); color: #10b981; } /* Green accent for Devices */
+
+        /* --- MAIN CONTENT --- */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* Toolbar */
+        .toolbar {
+            padding: 20px 30px;
+            background: rgba(11, 12, 21, 0.95);
+            border-bottom: 1px solid var(--border-light);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .stats-bar {
+            display: flex; gap: 20px;
+        }
+        .mini-stat {
+            background: rgba(255,255,255,0.05); padding: 8px 15px; border-radius: 6px; border: 1px solid var(--border-light);
+            font-size: 0.85rem; display: flex; align-items: center; gap: 8px;
+        }
+        .dot { width: 8px; height: 8px; border-radius: 50%; }
+
+        .btn-scan {
+            background: var(--bg-panel);
+            color: var(--accent-cyan);
+            border: 1px solid var(--accent-cyan);
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex; align-items: center; gap: 8px;
+            transition: 0.3s;
+            text-decoration: none;
+        }
+        .btn-scan:hover { background: var(--accent-cyan); color: #000; box-shadow: 0 0 15px rgba(6, 182, 212, 0.4); }
+
+        /* DEVICE GRID */
+        .device-grid {
+            padding: 30px;
+            overflow-y: auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 25px;
+            padding-bottom: 150px; /* Space for console */
+        }
+
+        /* DEVICE CARD */
+        .dev-card {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-light);
+            border-radius: 12px;
+            padding: 20px;
+            position: relative;
+            transition: transform 0.2s;
+            display: flex; flex-direction: column; gap: 15px;
+        }
+        .dev-card:hover { transform: translateY(-5px); border-color: rgba(255,255,255,0.2); }
+        
+        .card-header { display: flex; justify-content: space-between; align-items: flex-start; }
+        
+        .dev-icon {
+            width: 45px; height: 45px; background: rgba(255,255,255,0.05); border-radius: 8px;
+            display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: var(--text-main);
+        }
+        
+        .status-badge {
+            font-size: 0.7rem; font-family: var(--font-tech); padding: 4px 8px; border-radius: 4px; text-transform: uppercase;
+        }
+        .st-online { background: rgba(16, 185, 129, 0.2); color: var(--status-online); border: 1px solid rgba(16, 185, 129, 0.3); }
+        .st-offline { background: rgba(100, 116, 139, 0.2); color: var(--status-offline); border: 1px solid rgba(100, 116, 139, 0.3); }
+        .st-error { background: rgba(239, 68, 68, 0.2); color: var(--status-error); border: 1px solid rgba(239, 68, 68, 0.3); }
+
+        .dev-info h3 { font-size: 1rem; margin-bottom: 4px; }
+        .dev-info p { font-size: 0.8rem; color: var(--text-muted); font-family: var(--font-tech); }
+
+        /* Tech Details */
+        .tech-specs {
+            background: #0b0c15; padding: 10px; border-radius: 6px;
+            display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+            font-size: 0.75rem; color: var(--text-muted);
+        }
+        .spec-item b { color: var(--text-main); display: block; margin-bottom: 2px; }
+
+        /* Signal Bars */
+        .signal-bars { display: flex; gap: 3px; align-items: flex-end; height: 15px; }
+        .bar { width: 4px; background: #333; border-radius: 2px; }
+        .bar.active { background: var(--accent-cyan); }
+
+        /* Actions */
+        .card-actions { display: flex; gap: 10px; margin-top: auto; }
+        .btn-act {
+            flex: 1; padding: 8px; border: 1px solid var(--border-light); background: transparent; color: var(--text-muted);
+            border-radius: 6px; cursor: pointer; font-size: 0.8rem; display: flex; align-items: center; justify-content: center; gap: 6px;
+            transition: 0.2s;
+            text-decoration: none;
+        }
+        .btn-act:hover { border-color: var(--accent-cyan); color: var(--accent-cyan); }
+        .btn-danger:hover { border-color: var(--status-error); color: var(--status-error); }
+
+
+        /* --- MINI CONSOLE (Bottom Sheet) --- */
+        .console-panel {
+            position: absolute; bottom: 0; left: 0; width: 100%; height: 140px;
+            background: #0f1016; border-top: 1px solid var(--accent-primary);
+            padding: 15px; font-family: var(--font-tech); font-size: 0.8rem;
+            overflow-y: auto; color: #a5b4fc;
+            box-shadow: 0 -10px 30px rgba(0,0,0,0.5);
+        }
+        .log-line { margin-bottom: 5px; opacity: 0.8; }
+        .log-line span { color: #64748b; margin-right: 10px; }
+
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="logo">
+            <i class="fa-solid fa-network-wired"></i>
+            ADMIN_CORE
+        </div>
+
+        <a href="/admin_dashboard" class="nav-item"><i class="fa-solid fa-gauge-high"></i> Dashboard</a>
+        <a href="/admin/doctors" class="nav-item"><i class="fa-solid fa-user-doctor"></i> Manage Doctors</a>
+        <a href="/admin/patients" class="nav-item"><i class="fa-solid fa-hospital-user"></i> Manage Patients</a>
+        <a href="/admin/devices" class="nav-item active"><i class="fa-solid fa-microchip"></i> Manage Devices</a>
+        <a href="/admin/health_data" class="nav-item"><i class="fa-solid fa-database"></i> Health Data</a>
+        <a href="/admin/ai_suggestions" class="nav-item"><i class="fa-solid fa-robot"></i> AI Suggestions</a>
+        <a href="/admin/reports" class="nav-item"><i class="fa-solid fa-chart-line"></i> Reports</a>
+        <a href="/admin/settings" class="nav-item"><i class="fa-solid fa-sliders"></i> Settings</a>
+        <a href="/logout" class="nav-item" style="color: var(--status-error); margin-top: auto;"><i class="fa-solid fa-power-off"></i> Logout</a>
+    </div>
+
+    <div class="main-content">
+        
+        <div class="toolbar">
+            <div class="stats-bar">
+                <div class="mini-stat">
+                    <div class="dot" style="background: var(--status-online)"></div> {{ devices_list|length }} Active
+                </div>
+                <div class="mini-stat">
+                    <div class="dot" style="background: var(--status-error)"></div> 0 Error
+                </div>
+                <div class="mini-stat">
+                    <div class="dot" style="background: var(--status-offline)"></div> 0 Offline
+                </div>
+            </div>
+            <a href="{{ url_for('add_device') }}" class="btn-scan">
+                <i class="fa-solid fa-plus"></i> Add Device
+            </a>
+        </div>
+
+        <div class="device-grid" id="deviceGrid">
+            {% for device in devices_list %}
+            <div class="dev-card">
+                <div class="card-header">
+                    <div class="dev-icon"><i class="fa-solid {{ 'fa-wifi' if device[3] == 'Online' else 'fa-plug' }}"></i></div>
+                    <span class="status-badge {{ 'st-online' if device[3] == 'Online' else 'st-offline' }}">{{ device[3] }}</span>
+                </div>
+                
+                <div class="dev-info">
+                    <h3>Device ID: {{ device[1] }}</h3>
+                    <p>Assigned to: {{ device[2] if device[2] else 'Unassigned' }}</p>
+                </div>
+
+                <div class="tech-specs">
+                    <div class="spec-item"><b>Last Upload</b> {{ device[4] if device[4] else 'Never' }}</div>
+                    <div class="spec-item"><b>Battery</b> 85%</div>
+                    <div class="spec-item" style="grid-column: span 2; display:flex; justify-content:space-between; align-items:center;">
+                        <span>Signal</span>
+                        <div class="signal-bars">
+                             <div class="bar active" style="height: 7px"></div>
+                             <div class="bar active" style="height: 10px"></div>
+                             <div class="bar active" style="height: 13px"></div>
+                             <div class="bar active" style="height: 16px"></div>
+                             <div class="bar active" style="height: 19px"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-actions">
+                    <a href="{{ url_for('edit_device', device_id=device[0]) }}" class="btn-act"><i class="fa-solid fa-pen"></i> Edit</a>
+                    <button class="btn-act" onclick="logCommand('Reboot signal sent to {{ device[1] }}')"><i class="fa-solid fa-power-off"></i> Reboot</button>
+                    <a href="{{ url_for('delete_device', device_id=device[0]) }}" class="btn-act btn-danger" onclick="return confirm('Delete this device?');"><i class="fa-solid fa-trash"></i></a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="console-panel" id="consolePanel">
+            <div class="log-line"><span>System:</span> Admin console initialized...</div>
+            <div class="log-line"><span>Network:</span> Monitoring {{ devices_list|length }} active nodes...</div>
+        </div>
+
+    </div>
+
+    <script>
+        const consolePanel = document.getElementById('consolePanel');
+
+        function logCommand(text) {
+            const time = new Date().toLocaleTimeString('en-GB');
+            const line = document.createElement('div');
+            line.className = 'log-line';
+            line.innerHTML = `<span>${time}</span> > ${text}`;
+            consolePanel.appendChild(line);
+            consolePanel.scrollTop = consolePanel.scrollHeight;
+        }
+
+        // Simulate random incoming logs
+        setInterval(() => {
+            const msgs = [
+                "Telemetry packet received from [DEV-REF-ID].",
+                "Heartbeat signal ACK.",
+                "Syncing database records...",
+                "Encryption key rotation scheduled."
+            ];
+            const msg = msgs[Math.floor(Math.random() * msgs.length)];
+            logCommand(msg);
+        }, 5000);
+
+    </script>
+</body>
+</html>
